@@ -1,0 +1,52 @@
+
+NotPassCreditStats=Not Pass Credit Stats
+NotPassCreditStats.std=Std
+NotPassCreditStats.course=Course
+NotPassCreditStats.credit=Credit
+NotPassCreditStats.courseType=Course Type
+
+ScoreSection=Score Section
+ScoreSection.fromScore=From Score
+ScoreSection.toScore=To Score
+
+GradeModifyApply=Grade Modify Apply
+GradeModifyApply.std=Std
+GradeModifyApply.semester=Semester
+GradeModifyApply.project=Project
+GradeModifyApply.course=Course
+GradeModifyApply.gradeType=Grade Type
+GradeModifyApply.examStatus=Exam Status
+GradeModifyApply.examStatusBefore=Exam Status Before
+GradeModifyApply.origScore=Orig Score
+GradeModifyApply.origScoreText=Orig Score Text
+GradeModifyApply.score=Score
+GradeModifyApply.scoreText=Score Text
+GradeModifyApply.status=Status
+GradeModifyApply.applyReason=Apply Reason
+GradeModifyApply.auditReason=Audit Reason
+GradeModifyApply.applyer=Applyer
+GradeModifyApply.auditer=Auditer
+GradeModifyApply.finalAuditer=Final Auditer
+
+TotalCreditStats=Total Credit Stats
+TotalCreditStats.std=Std
+TotalCreditStats.tolCredit=Tol Credit
+
+GradeViewScope=Grade View Scope
+GradeViewScope.projects=Projects
+GradeViewScope.spans=Educations
+GradeViewScope.stdTypes=Std Types
+GradeViewScope.enrollYears=Enroll Years
+GradeViewScope.checkEvaluation=Check Evaluation
+
+
+ReportTemplate=Report Template
+ReportTemplate.project=Project
+ReportTemplate.category=Category
+ReportTemplate.code=Code
+ReportTemplate.name=Name
+ReportTemplate.remark=Remark
+ReportTemplate.template=Template
+ReportTemplate.options=Options
+ReportTemplate.pageSize=Page Size
+ReportTemplate.orientation=Orientation
