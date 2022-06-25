@@ -50,3 +50,5 @@ lazy val ws = (project in file("ws"))
     libraryDependencies ++= Seq(openurp_stater_ws, beangle_serializer_text),
     libraryDependencies ++= Seq(openurp_std_api, beangle_ems_app)
   ).dependsOn(grade)
+
+publish / skip := true
