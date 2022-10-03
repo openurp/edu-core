@@ -40,7 +40,7 @@ class StdGradeServiceImpl extends StdGradeService {
                  departments: List[Department],
                  entityDao: EntityDao): Student = {
     val query = OqlBuilder.from(classOf[Student], "std")
-    query.where("std.user.code=:code", stdCode)
+    query.where("std.code=:code", stdCode)
     if (project == null || Collections.isEmpty(departments)) {
       query.where("std is null")
     } else {
