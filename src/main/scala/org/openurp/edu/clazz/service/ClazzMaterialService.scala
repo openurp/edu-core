@@ -15,16 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openurp.edu.grade.service.impl
+package org.openurp.edu.clazz.service
 
-import org.beangle.cdi.bind.BindModule
+import org.openurp.edu.clazz.model.{Clazz, ClazzMaterial, ClazzNotice, ClazzNoticeFile}
 
-class BindAuditModule extends BindModule {
+import java.io.InputStream
 
-  protected override def binding(): Unit = {
-    bind("planAuditCourseSubstitutionListener", classOf[PlanAuditCourseSubstitutionListener])
-    bind("planAuditCourseTakerListener", classOf[PlanAuditCourseTakerListener])
-    bind("planAuditCourseTypeMatchListener", classOf[PlanAuditCourseTypeMatchListener])
-    bind("planAuditCommonElectiveListener", classOf[PlanAuditCommonElectiveListener])
-  }
+trait ClazzMaterialService {
+
+  def createMaterial(clazz: Clazz, name: String, url: Option[String], in: Option[InputStream], fileName: Option[String]): ClazzMaterial
+
+  def createFile(notice: ClazzNotice, in: InputStream, fileName: String): ClazzNoticeFile
 }

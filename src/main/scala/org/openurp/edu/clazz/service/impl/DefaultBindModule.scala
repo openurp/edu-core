@@ -15,14 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openurp.edu.grade.service.impl
+package org.openurp.edu.clazz.service.impl
 
 import org.beangle.cdi.bind.BindModule
+import org.openurp.edu.clazz.domain.DefaultClazzProvider
 
-class BindConfigModule extends BindModule {
+class DefaultBindModule extends BindModule {
 
-  protected override def binding(): Unit = {
-    bind(classOf[TranscriptTemplateServiceImpl])
-    bind("gradeRateService", classOf[GradeRateServiceImpl])
+  override def binding(): Unit = {
+    bind(classOf[ClazzMaterialServiceImpl])
+    bind(classOf[DefaultClazzProvider])
   }
 }

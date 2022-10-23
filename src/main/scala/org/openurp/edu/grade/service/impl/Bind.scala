@@ -19,11 +19,28 @@ package org.openurp.edu.grade.service.impl
 
 import org.beangle.cdi.bind.BindModule
 import org.openurp.edu.grade.domain.{DefaultCourseGradeProvider, DefaultGpaPolicy, NumRounder}
-import org.openurp.edu.grade.service.impl.*
 import org.openurp.edu.grade.service.{CourseGradePublishStack, GradingModeHelper}
 import org.openurp.edu.program.domain.DefaultAlternativeCourseProvider
 
-class BindDefaultModule extends BindModule {
+class AuditBindModule extends BindModule {
+
+  protected override def binding(): Unit = {
+    bind("planAuditCourseSubstitutionListener", classOf[PlanAuditCourseSubstitutionListener])
+    bind("planAuditCourseTakerListener", classOf[PlanAuditCourseTakerListener])
+    bind("planAuditCourseTypeMatchListener", classOf[PlanAuditCourseTypeMatchListener])
+    bind("planAuditCommonElectiveListener", classOf[PlanAuditCommonElectiveListener])
+  }
+}
+
+class ConfigBindModule extends BindModule {
+
+  protected override def binding(): Unit = {
+    bind(classOf[TranscriptTemplateServiceImpl])
+    bind("gradeRateService", classOf[GradeRateServiceImpl])
+  }
+}
+
+class DefaultBindModule extends BindModule {
 
   protected override def binding(): Unit = {
     bind("bestGradeCourseGradeProvider", classOf[BestCourseGradeProviderImpl])
