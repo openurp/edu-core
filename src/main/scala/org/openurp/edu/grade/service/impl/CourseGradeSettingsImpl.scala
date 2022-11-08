@@ -35,7 +35,7 @@ object CourseGradeSettingsImpl {
 
 class CourseGradeSettingsImpl extends BaseServiceImpl with CourseGradeSettings {
 
-  private var cache = Collections.newMap[Integer, CourseGradeSetting]
+  private val cache = Collections.newMap[Integer, CourseGradeSetting]
 
   var codeService: CodeService = _
 

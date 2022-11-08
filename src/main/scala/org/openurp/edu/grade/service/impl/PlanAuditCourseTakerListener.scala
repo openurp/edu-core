@@ -42,7 +42,7 @@ object PlanAuditCourseTakerListener {
 
 class PlanAuditCourseTakerListener extends PlanAuditListener {
 
-  private var entityDao: EntityDao = _
+  var entityDao: EntityDao = _
 
   var defaultPassed: Boolean = false
 

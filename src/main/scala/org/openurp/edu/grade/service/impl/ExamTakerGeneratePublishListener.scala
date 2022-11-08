@@ -38,7 +38,7 @@ object ExamTakerGeneratePublishListener {
 
 class ExamTakerGeneratePublishListener extends BaseServiceImpl with CourseGradePublishListener {
 
-  private var settings: CourseGradeSettings = _
+  var settings: CourseGradeSettings = _
 
   private var forbiddenCourseNames: Array[String] = new Array[String](0)
 

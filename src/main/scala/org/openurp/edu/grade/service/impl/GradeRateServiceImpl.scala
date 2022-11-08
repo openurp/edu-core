@@ -30,7 +30,7 @@ import org.openurp.edu.grade.BaseServiceImpl
 
 class GradeRateServiceImpl extends BaseServiceImpl with GradeRateService {
 
-  private var expressionEvaluator: ExpressionEvaluator = _
+  var expressionEvaluator: ExpressionEvaluator = _
 
   /**
    * 查询记录方式对应的配置

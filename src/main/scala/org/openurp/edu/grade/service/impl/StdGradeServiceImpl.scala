@@ -32,7 +32,7 @@ import java.time.LocalDate
 
 class StdGradeServiceImpl extends StdGradeService {
 
-  private var entityDao: EntityDao = _
+  var entityDao: EntityDao = _
 
   def stdByCode(
                  stdCode: String,

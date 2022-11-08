@@ -55,7 +55,7 @@ class TranscriptPublishedGradeProvider extends TranscriptDataProvider {
 
   protected def getFilters(options: collection.Map[String, String]): Seq[GradeFilter] = {
     if (null == options || options.isEmpty) return List.empty
-    registry.getFilters(options("grade.filters"))
+    registry.getFilters(options.getOrElse("grade.filters",""))
   }
 
 }

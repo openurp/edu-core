@@ -19,13 +19,10 @@ package org.openurp.edu.grade.service.impl
 
 import org.beangle.commons.collection.Collections
 import org.openurp.base.std.model.Student
-import org.openurp.edu.grade.model.CourseGrade
-import org.openurp.edu.grade.domain.CourseGradeProvider
-import org.openurp.edu.grade.service.impl.GradeFilterRegistry
+import org.openurp.edu.grade.domain.{CourseGradeProvider, GpaPolicy, GradeFilter}
+import org.openurp.edu.grade.model.{CourseGrade, StdGpa}
 import org.openurp.edu.grade.service.TranscriptDataProvider
-import org.openurp.edu.grade.domain.GradeFilter
-import org.openurp.edu.grade.domain.GpaPolicy
-import org.openurp.edu.grade.model.StdGpa
+import org.openurp.edu.grade.service.impl.GradeFilterRegistry
 
 /**
  * 成绩绩点提供者
@@ -34,11 +31,11 @@ import org.openurp.edu.grade.model.StdGpa
  */
 class TranscriptGpaProvider extends TranscriptDataProvider {
 
-  private var courseGradeProvider: CourseGradeProvider = _
+  var courseGradeProvider: CourseGradeProvider = _
 
-  private var gpaPolicy: GpaPolicy = _
+  var gpaPolicy: GpaPolicy = _
 
-  private var gradeFilterRegistry: GradeFilterRegistry = _
+  var gradeFilterRegistry: GradeFilterRegistry = _
 
   def dataName: String = "gpas"
 
@@ -47,7 +44,7 @@ class TranscriptGpaProvider extends TranscriptDataProvider {
     val datas = Collections.newMap[Student, StdGpa]
     val gradeMap = courseGradeProvider.getPublished(stds)
     for (std <- stds) {
-      var grades:Iterable[CourseGrade] = gradeMap(std)
+      var grades: Iterable[CourseGrade] = gradeMap(std)
       for (filter <- matched) grades = filter.filter(grades)
       datas.put(std, gpaPolicy.calc(std, grades, true))
     }
@@ -62,7 +59,7 @@ class TranscriptGpaProvider extends TranscriptDataProvider {
    */
   protected def getFilters(options: collection.Map[String, String]): Seq[GradeFilter] = {
     if (null == options || options.isEmpty) return List.empty
-    gradeFilterRegistry.getFilters(options("gpa.filters"))
+    gradeFilterRegistry.getFilters(options.getOrElse("gpa.filters", ""))
   }
 
 }
