@@ -17,7 +17,7 @@
 
 package org.openurp.edu.clazz.service
 
-import org.openurp.edu.clazz.model.{Clazz, ClazzMaterial, ClazzNotice, ClazzNoticeFile}
+import org.openurp.edu.clazz.model.{Clazz, ClazzBulletin, ClazzMaterial, ClazzNotice, ClazzNoticeFile}
 
 import java.io.InputStream
 
@@ -25,5 +25,7 @@ trait ClazzMaterialService {
 
   def createMaterial(clazz: Clazz, name: String, url: Option[String], in: Option[InputStream], fileName: Option[String]): ClazzMaterial
 
-  def createFile(notice: ClazzNotice, in: InputStream, fileName: String): ClazzNoticeFile
+  def createNoticeFile(notice: ClazzNotice, in: InputStream, fileName: String): ClazzNoticeFile
+
+  def createBulletinFile(bulletin: ClazzBulletin,in:InputStream,fileName:String):Unit
 }

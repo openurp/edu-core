@@ -59,9 +59,9 @@ class DefaultCourseGradeCalculator extends CourseGradeCalculator {
 
   var numRounder: NumRounder = NumRounder.Normal
 
-  def calcFinal(grade: CourseGrade, state: CourseGradeState): Unit = {
+  def calcFinal(grade: CourseGrade): Unit = {
     if (!grade.published) grade.status = guessFinalStatus(grade)
-    updateScore(grade, calcScore(grade, state), null)
+    updateScore(grade, calcScore(grade), null)
   }
 
   override def calcAll(grade: CourseGrade, state: CourseGradeState): Unit = {
@@ -84,7 +84,7 @@ class DefaultCourseGradeCalculator extends CourseGradeCalculator {
     if (!gag.published && null != state) gag.status = state.getStatus(gag.gradeType)
     if (!grade.published) grade.status = guessFinalStatus(grade)
     if (gag.status == grade.status) {
-      updateScore(grade, calcScore(grade, state), null)
+      updateScore(grade, calcScore(grade), null)
     }
     gag
   }
@@ -178,7 +178,7 @@ class DefaultCourseGradeCalculator extends CourseGradeCalculator {
     if (null != makeupDelayGa) {
       if (!grade.published) grade.status = guessFinalStatus(grade)
       if (makeupDelayGa.status == grade.status) {
-        updateScore(grade, calcScore(grade, state), null)
+        updateScore(grade, calcScore(grade), null)
       }
     }
     makeupDelayGa
@@ -256,7 +256,7 @@ class DefaultCourseGradeCalculator extends CourseGradeCalculator {
     if (java.lang.Float.compare(gaGrade.score.get, 60) >= 0) Some(60f) else gaGrade.score
   }
 
-  protected def calcScore(grade: CourseGrade, state: CourseGradeState): Option[Float] = {
+  protected def calcScore(grade: CourseGrade): Option[Float] = {
     var best: Option[Float] = None
     for (gg <- grade.gaGrades if gg.score.isDefined) {
       var myScore: Option[Float] = None

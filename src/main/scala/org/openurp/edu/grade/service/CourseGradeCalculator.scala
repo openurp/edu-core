@@ -33,7 +33,7 @@ trait CourseGradeCalculator {
    *
    * @param grade
    */
-  def calcFinal(grade: CourseGrade, state: CourseGradeState): Unit
+  def calcFinal(grade: CourseGrade): Unit
 
   /**
    * 计算最终成绩,是否通过和绩点

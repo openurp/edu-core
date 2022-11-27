@@ -23,7 +23,7 @@ import org.beangle.ems.app.EmsApp
 import org.beangle.security.Securities
 import org.openurp.base.model.User
 import org.openurp.edu.clazz.service.ClazzMaterialService
-import org.openurp.edu.clazz.model.{Clazz, ClazzMaterial, ClazzNotice, ClazzNoticeFile}
+import org.openurp.edu.clazz.model.{Clazz, ClazzBulletin, ClazzMaterial, ClazzNotice, ClazzNoticeFile}
 
 import java.io.InputStream
 import java.time.Instant
@@ -41,7 +41,7 @@ class ClazzMaterialServiceImpl extends ClazzMaterialService {
     material.name = name
     val blob = EmsApp.getBlobRepository(true)
     in foreach { is =>
-      val meta = blob.upload(s"/clazz/${clazz.semester.id}/${clazz.id}/", is, fileName.get, user.code + " " + user.name)
+      val meta = blob.upload(s"/clazz/${clazz.semester.id}/${clazz.id}/material/", is, fileName.get, user.code + " " + user.name)
       material.filePath = Some(meta.filePath)
     }
     url foreach { url =>
@@ -51,7 +51,7 @@ class ClazzMaterialServiceImpl extends ClazzMaterialService {
     material
   }
 
-  override def createFile(notice: ClazzNotice, is: InputStream, fileName: String): ClazzNoticeFile = {
+  override def createNoticeFile(notice: ClazzNotice, is: InputStream, fileName: String): ClazzNoticeFile = {
     val clazz = notice.clazz
     val file = new ClazzNoticeFile
     file.notice = notice
@@ -64,5 +64,14 @@ class ClazzMaterialServiceImpl extends ClazzMaterialService {
     file.mediaType = meta.mediaType
     entityDao.saveOrUpdate(file)
     file
+  }
+
+  def createBulletinFile(bulletin: ClazzBulletin, is: InputStream, fileName: String): Unit = {
+    val blob = EmsApp.getBlobRepository(true)
+    val clazz = bulletin.clazz
+    val user = entityDao.findBy(classOf[User], "code", List(Securities.user)).head
+    val meta = blob.upload(s"/clazz/${clazz.semester.id}/${clazz.id}/bulletin/", is, fileName, user.code + " " + user.name)
+    bulletin.contactQrcodePath = Some(meta.filePath)
+    entityDao.saveOrUpdate(bulletin)
   }
 }
