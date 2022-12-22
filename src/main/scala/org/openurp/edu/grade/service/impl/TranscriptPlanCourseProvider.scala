@@ -26,7 +26,7 @@ import org.openurp.edu.program.model.PlanCourse
 
 class TranscriptPlanCourseProvider extends BaseServiceImpl with TranscriptDataProvider {
 
-   var coursePlanProvider: CoursePlanProvider = _
+  var coursePlanProvider: CoursePlanProvider = _
 
   def dataName: String = "planCourses"
 

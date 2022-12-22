@@ -20,13 +20,13 @@ package org.openurp.edu.grade.service.impl
 import org.beangle.commons.collection.Collections
 import org.beangle.commons.lang.Strings
 import org.beangle.data.dao.{Operation, OqlBuilder}
-import org.openurp.code.edu.model.{ExamStatus, ExamType, GradeType}
 import org.openurp.base.std.model.Student
+import org.openurp.code.edu.model.{ExamStatus, ExamType, GradeType}
 import org.openurp.edu.clazz.model.Clazz
 import org.openurp.edu.exam.model.ExamTaker
 import org.openurp.edu.grade.BaseServiceImpl
 import org.openurp.edu.grade.model.{CourseGrade, CourseGradeState, ExamGrade}
-import org.openurp.edu.grade.service.impl.ExamTakerGeneratePublishListener._
+import org.openurp.edu.grade.service.impl.ExamTakerGeneratePublishListener.*
 import org.openurp.edu.grade.service.{CourseGradePublishListener, CourseGradeSetting, CourseGradeSettings}
 
 object ExamTakerGeneratePublishListener {
@@ -87,11 +87,7 @@ class ExamTakerGeneratePublishListener extends BaseServiceImpl with CourseGradeP
     if (examStatus.hasDeferred) {
       ExamType.Delay
     } else {
-      if (setting.allowExamStatuses.contains(examStatus)) {
-        ExamType.Makeup
-      } else {
-        0
-      }
+      if setting.noMakeupExamStatuses.contains(examStatus) then 0 else ExamType.Makeup
     }
   }
 

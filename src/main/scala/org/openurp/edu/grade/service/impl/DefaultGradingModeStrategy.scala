@@ -18,15 +18,13 @@
 package org.openurp.edu.grade.service.impl
 
 import org.beangle.data.dao.EntityDao
-import org.openurp.code.edu.model.GradeType
-import org.openurp.code.edu.model.GradingMode
-import org.openurp.edu.grade.model.CourseGradeState
-import org.openurp.edu.grade.model.ExamGradeState
-import org.openurp.edu.grade.model.GradeState
-import org.openurp.edu.grade.model.Grade
+import org.beangle.security.Securities
+import org.openurp.code.edu.model.{GradeType, GradingMode}
+import org.openurp.edu.grade.model.*
 import org.openurp.edu.grade.service.GradingModeStrategy
-import org.openurp.edu.grade.model.GaGradeState
+
 import java.time.Instant
+
 /**
  * 默认成绩记录方式配置方法
  */
@@ -34,14 +32,10 @@ class DefaultGradingModeStrategy extends GradingModeStrategy {
 
   var entityDao: EntityDao = _
 
-  private def isDefault(style: GradingMode): Boolean = {
-    null == style || style.id == GradingMode.Percent
-  }
-
-  def configGradingMode(gradeState: CourseGradeState, gradeTypes: List[GradeType]): Unit = {
+  def configGradingMode(gradeState: CourseGradeState, gradeTypes: Iterable[GradeType]): Unit = {
     if (isDefault(gradeState.gradingMode)) gradeState.gradingMode = getDefaultCourseGradeGradingMode(gradeState)
     for (t <- gradeTypes) {
-      val typeState = getState(gradeState, t)
+      val typeState = GradingModeStrategy.getOrCreateState(gradeState, t)
       if (null == typeState.gradingMode) {
         typeState.gradingMode = getDefaultExamGradeGradingMode(gradeState, typeState)
       }
@@ -71,32 +65,7 @@ class DefaultGradingModeStrategy extends GradingModeStrategy {
     }
   }
 
-  private def getState(gs: CourseGradeState, gradeType: GradeType): GradeState = {
-    if (gradeType.isGa) {
-      gs.gaStates find (_.gradeType.id == gradeType.id) match {
-        case None =>
-          val result = new GaGradeState
-          result.status = Grade.Status.New
-          result.updatedAt = Instant.now
-          result.gradeType = gradeType
-          result.gradeState = gs
-          gs.gaStates += result
-          result
-        case Some(result) => result
-      }
-    } else {
-      gs.examStates find (_.gradeType.id == gradeType.id) match {
-        case None =>
-          val result = new ExamGradeState
-          result.status = Grade.Status.New
-          result.updatedAt = Instant.now
-          result.gradeType = gradeType
-          result.gradeState = gs
-          gs.examStates += result
-          result
-        case Some(result) => result
-      }
-    }
+  private def isDefault(m: GradingMode): Boolean = {
+    null == m || m.id == GradingMode.Percent
   }
-
 }

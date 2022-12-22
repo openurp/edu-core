@@ -50,7 +50,7 @@ class DefaultBindModule extends BindModule {
     bind("gpaPolicy", classOf[DefaultGpaPolicy])
     bind("bestOriginGradeFilter", classOf[BestOriginGradeFilter])
     bind("gradeFilterRegistry", classOf[SpringGradeFilterRegistry])
-    bind("courseGradeService", classOf[CourseGradeServiceImpl])
+    bind("clazzGradeService", classOf[ClazzGradeServiceImpl])
     bind("gradeInputSwithService", classOf[GradeInputSwithServiceImpl])
 
     bind("scriptGradeFilter", classOf[ScriptGradeFilter])

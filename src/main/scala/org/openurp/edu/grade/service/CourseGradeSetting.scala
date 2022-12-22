@@ -19,15 +19,18 @@ package org.openurp.edu.grade.service
 
 import org.beangle.commons.collection.Collections
 import org.openurp.base.model.Project
-import org.openurp.code.edu.model.{ExamStatus, GradeType}
+import org.openurp.code.edu.model.{CourseTakeType, ExamStatus, GradeType}
 
 class CourseGradeSetting {
 
   /** 总评成绩的组成部分 */
   var gaElementTypes = Collections.newBuffer[GradeType]
 
-  /** 允许补考考试类型 */
-  var allowExamStatuses = Collections.newSet[ExamStatus]
+  /** 期末考试是如下情况时，不允许补考 */
+  var noMakeupExamStatuses = Collections.newSet[ExamStatus]
+
+  /** 修读类别是如下时，不允许补考 */
+  var noMakeupTakeTypes = Collections.newSet[CourseTakeType]
 
   /** 不允许录入成绩的考试类型列表 */
   var emptyScoreStatuses = Collections.newSet[ExamStatus]
@@ -35,6 +38,7 @@ class CourseGradeSetting {
   /** 是否提交即发布 */
   var submitIsPublish = false
 
+  /** 缓考也作为最终 */
   var delayIsGa = false
 
   def this(project: Project) = {

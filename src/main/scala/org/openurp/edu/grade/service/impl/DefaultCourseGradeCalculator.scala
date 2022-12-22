@@ -17,15 +17,14 @@
 
 package org.openurp.edu.grade.service.impl
 
-import java.time.Instant
-
 import org.beangle.data.dao.EntityDao
-import org.openurp.code.edu.model.{CourseTakeType, ExamStatus, GradeType, GradingMode}
 import org.openurp.base.std.model.Student
+import org.openurp.code.edu.model.{CourseTakeType, ExamStatus, GradeType, GradingMode}
 import org.openurp.edu.grade.domain.NumRounder
-import org.openurp.edu.grade.model.{CourseGrade, CourseGradeState, ExamGrade, GaGrade}
+import org.openurp.edu.grade.model.*
 import org.openurp.edu.grade.service.{CourseGradeCalculator, CourseGradeSettings, GradeRateService}
-import org.openurp.edu.grade.model.Grade
+
+import java.time.Instant
 
 object DefaultCourseGradeCalculator {
 
@@ -43,7 +42,7 @@ object DefaultCourseGradeCalculator {
 }
 
 import org.beangle.security.Securities
-import org.openurp.edu.grade.service.impl.DefaultCourseGradeCalculator._
+import org.openurp.edu.grade.service.impl.DefaultCourseGradeCalculator.*
 
 class DefaultCourseGradeCalculator extends CourseGradeCalculator {
 
@@ -156,15 +155,15 @@ class DefaultCourseGradeCalculator extends CourseGradeCalculator {
     grade.std = entityDao.get(classOf[Student], stdId)
     val gatypes = List(DelayGa, MakeupGa)
     var makeupDelayGa: GaGrade = null
-    var makeupDelayGrade:Option[ExamGrade]  = None
+    var makeupDelayGrade: Option[ExamGrade] = None
     for (gatype <- gatypes) {
       val gag = getGaGrade(grade, gatype)
       var gaScore: Option[Float] = None
-      if (gatype == DelayGa){
-        gaScore=calcDelayGaScore(grade, state)
+      if (gatype == DelayGa) {
+        gaScore = calcDelayGaScore(grade, state)
         makeupDelayGrade = grade.getExamGrade(Delay)
       } else {
-        gaScore=calcMakeupGaScore(grade, state)
+        gaScore = calcMakeupGaScore(grade, state)
         makeupDelayGrade = grade.getExamGrade(Makeup)
       }
       if (gaScore.isEmpty && (makeupDelayGrade.isEmpty || makeupDelayGrade.get.id == ExamStatus.Normal)) {
@@ -258,7 +257,7 @@ class DefaultCourseGradeCalculator extends CourseGradeCalculator {
 
   protected def calcScore(grade: CourseGrade): Option[Float] = {
     var best: Option[Float] = None
-    for (gg <- grade.gaGrades if gg.score.isDefined) {
+    for (gg <- grade.gaGrades if (null != gg.score && gg.score.isDefined)) {
       var myScore: Option[Float] = None
       if (gg.gradeType != EndGa) {
         if (gg.published) myScore = gg.score
@@ -360,7 +359,7 @@ class DefaultCourseGradeCalculator extends CourseGradeCalculator {
   }
 
   protected def reserve(score: Float, state: CourseGradeState): Float = {
-    this.numRounder.round(score, 0) //state.precision)
+    this.numRounder.round(score, if null == state then 0 else state.scorePrecision)
   }
 
 }

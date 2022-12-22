@@ -32,14 +32,13 @@ class GradeInputSwithServiceImpl extends BaseServiceImpl with GradeInputSwitchSe
     val query = OqlBuilder.from(classOf[GradeInputSwitch], "switch")
     query.where("switch.project=:project", project)
     query.where("switch.semester=:semester", semester)
-    query.where("switch.opened = true")
     entityDao.unique(query)
   }
 
   def getOpenedSemesters(project: Project): Seq[Semester] = {
     val query = OqlBuilder.from[Semester](classOf[GradeInputSwitch].getName, "s")
     query.where("s.project=:project", project)
-    query.where("s.opened = true and s.endAt>=:now", Instant.now)
+    query.where("s.endAt>=:now", Instant.now)
     query.orderBy("s.semester.beginOn").select("s.semester")
     entityDao.search(query)
   }

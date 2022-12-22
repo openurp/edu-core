@@ -23,23 +23,30 @@ import org.beangle.commons.lang.functor.Predicate
 import org.beangle.commons.lang.{Objects, Strings}
 import org.beangle.data.dao.{Operation, OqlBuilder}
 import org.beangle.data.model.Entity
+import org.beangle.security.Securities
 import org.openurp.base.model.Project
-import org.openurp.code.edu.model.{CourseTakeType, GradeType}
+import org.openurp.base.service.ProjectPropertyService
+import org.openurp.code.edu.model.{CourseTakeType, GradeType, GradingMode}
 import org.openurp.edu.clazz.model.Clazz
 import org.openurp.edu.grade.BaseServiceImpl
 import org.openurp.edu.grade.model.*
-import org.openurp.edu.grade.service.*
 import org.openurp.edu.grade.model.Grade.Status.{New, Published}
-import org.openurp.edu.grade.model.{Grade, GradeState}
+import org.openurp.edu.grade.service.*
 import org.openurp.edu.program.domain.CoursePlanProvider
 
-class CourseGradeServiceImpl extends BaseServiceImpl with CourseGradeService {
+import java.time.Instant
+
+class ClazzGradeServiceImpl extends BaseServiceImpl with ClazzGradeService {
 
   var calculator: CourseGradeCalculator = _
 
   var coursePlanProvider: CoursePlanProvider = _
 
+  var gradingModeStrategy: GradingModeStrategy = _
+
   var publishStack: CourseGradePublishStack = _
+
+  var projectPropertyService: ProjectPropertyService = _
 
   var settings: CourseGradeSettings = _
 
@@ -97,7 +104,7 @@ class CourseGradeServiceImpl extends BaseServiceImpl with CourseGradeService {
   }
 
   private def updateState(clazz: Clazz, gradeTypes: Array[GradeType], status: Int): Unit = {
-    val courseGradeStates = entityDao.findBy(classOf[CourseGradeState], "clazz",clazz)
+    val courseGradeStates = entityDao.findBy(classOf[CourseGradeState], "clazz", clazz)
     var gradeState: CourseGradeState = null
     for (gradeType <- gradeTypes) {
       gradeState = if (courseGradeStates.isEmpty) new CourseGradeState else courseGradeStates.head
@@ -159,10 +166,11 @@ class CourseGradeServiceImpl extends BaseServiceImpl with CourseGradeService {
 
     if (GradeType.EndGa == gradeType.id) {
       gts ++= gradeSetting.gaElementTypes
-    } else if (GradeType.MakeupGa == gradeType.id) {
+    } else if (GradeType.MakeupGa == gradeType.id || GradeType.DelayGa == gradeType.id) {
       gts += new GradeType(GradeType.Makeup)
-    } else if (GradeType.DelayGa == gradeType.id) {
+      gts += new GradeType(GradeType.MakeupGa)
       gts += new GradeType(GradeType.Delay)
+      gts += new GradeType(GradeType.DelayGa)
     }
     for (courseGrade <- courseGrades; if (courseGrade.courseTakeType.id != CourseTakeType.Exemption)) {
       if (GradeType.Final == gradeType.id) {
@@ -192,21 +200,14 @@ class CourseGradeServiceImpl extends BaseServiceImpl with CourseGradeService {
         }
       }
     }
-    if (state.examStates.isEmpty && state.gaStates.isEmpty) {
-      remove += state
-    } else {
-      save += state
-    }
-    // FIXME 日志
+    if state.examStates.isEmpty && state.gaStates.isEmpty then remove += state
+    else save += state
+
     entityDao.execute(Operation.saveOrUpdate(save).remove(remove))
   }
 
   def getState(clazz: Clazz): CourseGradeState = {
-    val list = entityDao.findBy(classOf[CourseGradeState], "clazz", clazz)
-    if (list.isEmpty) {
-      return null
-    }
-    list.head
+    entityDao.findBy(classOf[CourseGradeState], "clazz", clazz).headOption.orNull
   }
 
   private def removeGrade(courseGrade: CourseGrade, gradeTypes: Iterable[GradeType], state: CourseGradeState): Boolean = {
@@ -227,4 +228,43 @@ class CourseGradeServiceImpl extends BaseServiceImpl with CourseGradeService {
     }
   }
 
+  override def getOrCreateState(clazz: Clazz, gradeTypes: Iterable[GradeType], precision: Option[Int], gradingMode: Option[GradingMode]) = {
+    var state = getState(clazz)
+    if (null == state) {
+      state = new CourseGradeState(clazz)
+      state.updatedAt = Instant.now
+      state.operator = Securities.user
+    }
+    if (null != gradingModeStrategy) gradingModeStrategy.configGradingMode(state, gradeTypes)
+    gradingMode foreach { model =>
+      state.gradingMode = model
+      val es = state.getState(new GradeType(GradeType.EndGa))
+      if (null != es) es.gradingMode = model
+    }
+    precision match {
+      case None =>
+        if (!state.persisted || state.gaStates.isEmpty) {
+          state.scorePrecision = projectPropertyService.get(clazz.project, "edu.grade.score_precision", "0").toInt
+        }
+      case Some(x) => state.scorePrecision = x
+    }
+    entityDao.saveOrUpdate(state)
+    state
+  }
+
+  override def cleanZeroPercents(gradeState: CourseGradeState, gradeTypes: Iterable[GradeType]): List[GradeType] = {
+    if (Collections.isEmpty(gradeTypes)) return List.empty
+    val zeroPercentTypes = Collections.newBuffer[GradeType]
+    gradeTypes foreach { gradeType =>
+      if (!gradeType.isGa) {
+        val egState = gradeState.getState(gradeType).asInstanceOf[ExamGradeState]
+        if (null == egState || egState.scorePercent.getOrElse(0) == 0) {
+          zeroPercentTypes.addOne(gradeType)
+          gradeState.examStates.remove(egState)
+        }
+      }
+    }
+    entityDao.saveOrUpdate(gradeState)
+    gradeTypes.toList.filter(x => !zeroPercentTypes.contains(x))
+  }
 }

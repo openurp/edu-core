@@ -17,12 +17,12 @@
 
 package org.openurp.edu.grade.service
 
-import java.text.NumberFormat
-
 import org.beangle.commons.collection.Collections
 import org.beangle.commons.lang.{Numbers, Strings}
 import org.beangle.commons.script.ExpressionEvaluator
 import org.openurp.edu.grade.config.GradeRateConfig
+
+import java.text.NumberFormat
 
 class ScoreConverter(private var config: GradeRateConfig, private var expressionEvaluator: ExpressionEvaluator) {
 
@@ -46,6 +46,7 @@ class ScoreConverter(private var config: GradeRateConfig, private var expression
    */
   def convert(score: Option[Float]): Option[String] = {
     score match {
+      case null => None
       case None => None
       case Some(s) =>
         if (null == config) {
@@ -57,7 +58,7 @@ class ScoreConverter(private var config: GradeRateConfig, private var expression
   }
 
   def passed(score: Option[Float]): Boolean = {
-    if (null == config || score.isEmpty) {
+    if (null == config || null == score || score.isEmpty) {
       false
     } else {
       java.lang.Float.compare(score.get, config.passScore) >= 0
@@ -95,7 +96,7 @@ class ScoreConverter(private var config: GradeRateConfig, private var expression
    * @return
    */
   def calcGp(score: Option[Float]): Option[Float] = {
-    if (score.isEmpty || score.get <= 0) {
+    if (null==score || score.isEmpty || score.get <= 0) {
       Some(0)
     } else {
       val s = score.get
