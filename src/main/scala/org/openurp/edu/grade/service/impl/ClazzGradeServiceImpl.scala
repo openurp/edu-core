@@ -72,7 +72,9 @@ class ClazzGradeServiceImpl extends BaseServiceImpl with ClazzGradeService {
       updateGradeState(grade, gradeState, grade.project)
       for (state <- gradeState.examStates) {
         val gradeType = state.gradeType
-        updateGradeState(grade.getExamGrade(gradeType).get, state, grade.project)
+        grade.getExamGrade(gradeType) foreach { eg =>
+          updateGradeState(eg, state, grade.project)
+        }
       }
       calculator.calcAll(grade, gradeState)
     }
@@ -82,9 +84,15 @@ class ClazzGradeServiceImpl extends BaseServiceImpl with ClazzGradeService {
     }
   }
 
+  /** 查询任务可以操作的成绩
+   *
+   * @param clazz
+   * @return
+   */
   private def getGrades(clazz: Clazz): Seq[CourseGrade] = {
     val query = OqlBuilder.from(classOf[CourseGrade], "courseGrade")
     query.where("courseGrade.clazz = :clazz", clazz)
+    query.where("courseGrade.courseTakeType.id != :ignored", CourseTakeType.Exemption)
     entityDao.search(query)
   }
 
@@ -114,7 +122,7 @@ class ClazzGradeServiceImpl extends BaseServiceImpl with ClazzGradeService {
         gradeState.updateStatus(gradeType, status)
       }
     }
-    val grades = entityDao.findBy(classOf[CourseGrade], "clazz", List(clazz))
+    val grades = getGrades(clazz)
     val toBeSaved = Collections.newBuffer[Operation]
     val published = Collections.newSet[CourseGrade]
     for (grade <- grades; if (grade.courseTakeType.id != CourseTakeType.Exemption)) {
@@ -157,7 +165,7 @@ class ClazzGradeServiceImpl extends BaseServiceImpl with ClazzGradeService {
 
   def remove(clazz: Clazz, gradeType: GradeType): Unit = {
     val state = getState(clazz)
-    val courseGrades = entityDao.findBy(classOf[CourseGrade], "clazz", List(clazz))
+    val courseGrades = getGrades(clazz)
     val gradeSetting = settings.getSetting(clazz.project)
     val save = Collections.newBuffer[Entity[_]]
     val remove = Collections.newBuffer[Entity[_]]
