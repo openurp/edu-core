@@ -15,10 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openurp.edu.grade.service.impl
+package org.openurp.edu.grade.service
 
 import org.beangle.cdi.bind.BindModule
 import org.openurp.edu.grade.domain.{DefaultCourseGradeProvider, DefaultGpaPolicy, NumRounder}
+import org.openurp.edu.grade.service.impl.*
 import org.openurp.edu.grade.service.{CourseGradePublishStack, GradingModeHelper}
 import org.openurp.edu.program.domain.DefaultAlternativeCourseProvider
 
@@ -32,7 +33,7 @@ class AuditBindModule extends BindModule {
   }
 }
 
-class ConfigBindModule extends BindModule {
+class ConfigModule extends BindModule {
 
   protected override def binding(): Unit = {
     bind(classOf[TranscriptTemplateServiceImpl])
@@ -40,7 +41,7 @@ class ConfigBindModule extends BindModule {
   }
 }
 
-class DefaultBindModule extends BindModule {
+class DefaultModule extends BindModule {
 
   protected override def binding(): Unit = {
     bind("bestGradeCourseGradeProvider", classOf[BestCourseGradeProviderImpl])

@@ -15,16 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openurp.edu.progarm.service
+package org.openurp.edu.clazz.service
 
 import org.beangle.cdi.bind.BindModule
-import org.openurp.edu.program.domain.{DefaultAlternativeCourseProvider, DefaultCoursePlanProvider, DefaultProgramProvider}
+import org.openurp.base.service.impl.SemesterServiceImpl
+import org.openurp.edu.clazz.domain.{DefaultClazzProvider, DefaultExamTakerProvider}
+import org.openurp.edu.extern.service.impl.{CertExemptApplyServiceImpl, DefaultCertificateGradeService, ExemptionServiceImpl}
+import org.openurp.edu.extern.service.signup.impl.{DefaultCertSignupService, SignupBuildInChecker}
+import org.openurp.edu.program.domain.{DefaultCoursePlanProvider, DefaultProgramProvider}
 
 class DefaultModule extends BindModule {
   override protected def binding(): Unit = {
-    bind(classOf[DefaultProgramProvider])
-    bind(classOf[DefaultCoursePlanProvider])
-    bind(classOf[DefaultAlternativeCourseProvider])
+    bind(classOf[DefaultClazzProvider])
+    bind(classOf[DefaultExamTakerProvider])
   }
-
 }
