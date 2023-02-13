@@ -25,11 +25,6 @@ import org.openurp.edu.program.domain.{DefaultCoursePlanProvider, DefaultProgram
 
 class DefaultModule extends BindModule {
   override protected def binding(): Unit = {
-    bind(classOf[DefaultProgramProvider])
-    bind(classOf[DefaultCoursePlanProvider])
-    bind(classOf[ExemptionServiceImpl])
-    bind(classOf[CertExemptApplyServiceImpl])
-
     bind("cert.signupBuildInChecker", classOf[SignupBuildInChecker])
     bind(classOf[DefaultCertSignupService]).property("checkerStack",
       list(ref("cert.signupBuildInChecker")))
