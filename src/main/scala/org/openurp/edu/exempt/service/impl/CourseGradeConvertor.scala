@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openurp.edu.extern.service.impl
+package org.openurp.edu.exempt.service.impl
 
 import org.beangle.commons.lang.Numbers
 import org.beangle.data.dao.{EntityDao, OqlBuilder}
@@ -24,6 +24,7 @@ import org.openurp.base.edu.model.Course
 import org.openurp.base.std.model.Student
 import org.openurp.code.edu.model.{CourseTakeType, GradeType, GradingMode}
 import org.openurp.edu.clazz.model.CourseTaker
+import org.openurp.edu.exempt.service.impl.ExemptionCourse
 import org.openurp.edu.grade.model.{CourseGrade, GaGrade, Grade}
 
 import java.time.Instant

@@ -19,7 +19,8 @@ package org.openurp.edu.extern.service
 
 import org.beangle.cdi.bind.BindModule
 import org.openurp.base.service.impl.SemesterServiceImpl
-import org.openurp.edu.extern.service.impl.{CertExemptApplyServiceImpl, DefaultCertificateGradeService, ExemptionServiceImpl}
+import org.openurp.edu.exempt.service.impl.{CertExemptApplyServiceImpl, ExemptionServiceImpl}
+import org.openurp.edu.extern.service.impl.DefaultCertificateGradeService
 import org.openurp.edu.extern.service.signup.impl.{DefaultCertSignupService, SignupBuildInChecker}
 import org.openurp.edu.program.domain.{DefaultCoursePlanProvider, DefaultProgramProvider}
 

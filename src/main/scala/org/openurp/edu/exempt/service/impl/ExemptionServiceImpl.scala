@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openurp.edu.extern.service.impl
+package org.openurp.edu.exempt.service.impl
 
 import org.beangle.commons.collection.Collections
 import org.beangle.data.dao.{EntityDao, OqlBuilder}
@@ -25,8 +25,9 @@ import org.openurp.base.model.Semester
 import org.openurp.base.service.SemesterService
 import org.openurp.base.std.model.Student
 import org.openurp.code.edu.model.CourseTakeType
+import org.openurp.edu.exempt.service.ExemptionService
 import org.openurp.edu.extern.model.{CertificateGrade, ExternGrade}
-import org.openurp.edu.extern.service.ExemptionService
+import org.openurp.edu.exempt.service.impl.ExemptionCourse
 import org.openurp.edu.grade.model.{CourseGrade, Grade}
 import org.openurp.edu.program.domain.CoursePlanProvider
 import org.openurp.edu.program.model.{CoursePlan, PlanCourse, Program}
@@ -78,7 +79,7 @@ class ExemptionServiceImpl extends ExemptionService {
   }
 
   override def removeExemption(eg: ExternGrade, course: Course): Unit = {
-    eg.courses.subtractOne(course)
+    eg.exempts.subtractOne(course)
     entityDao.saveOrUpdate(eg)
     val es = eg.externStudent
     removeExemption(es.std, course)
@@ -95,7 +96,7 @@ class ExemptionServiceImpl extends ExemptionService {
   }
 
   override def removeExemption(cg: CertificateGrade, course: Course): Unit = {
-    cg.courses.subtractOne(course)
+    cg.exempts.subtractOne(course)
     entityDao.saveOrUpdate(cg)
     removeExemption(cg.std, course)
     entityDao.saveOrUpdate(cg)
@@ -105,9 +106,9 @@ class ExemptionServiceImpl extends ExemptionService {
     val remark = eg.externStudent.school.name + " " + eg.courseName + " " + eg.scoreText
     val std = eg.externStudent.std
     addCourseGrades(std, courses, remark)
-    val emptyCourses = eg.courses filter (x => getExemptionGrades(std, x).isEmpty)
-    eg.courses.subtractAll(emptyCourses)
-    eg.courses ++= courses
+    val emptyCourses = eg.exempts filter (x => getExemptionGrades(std, x).isEmpty)
+    eg.exempts.subtractAll(emptyCourses)
+    eg.exempts ++= courses
     entityDao.saveOrUpdate(eg)
   }
 
@@ -115,9 +116,9 @@ class ExemptionServiceImpl extends ExemptionService {
     val remark = cg.subject.name + " " + cg.scoreText
     val std = cg.std
     addCourseGrades(std, courses, remark)
-    val emptyCourses = cg.courses filter (x => getExemptionGrades(std, x).isEmpty)
-    cg.courses.subtractAll(emptyCourses)
-    cg.courses ++= courses
+    val emptyCourses = cg.exempts filter (x => getExemptionGrades(std, x).isEmpty)
+    cg.exempts.subtractAll(emptyCourses)
+    cg.exempts ++= courses
     entityDao.saveOrUpdate(cg)
   }
 

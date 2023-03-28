@@ -15,15 +15,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openurp.edu.extern.service.impl
+package org.openurp.edu.exempt.service.impl
 
 import org.beangle.commons.collection.Collections
 import org.beangle.commons.lang.Numbers
 import org.beangle.data.dao.{EntityDao, OqlBuilder}
 import org.openurp.base.model.AuditStatus
 import org.openurp.code.edu.model.ExamStatus
-import org.openurp.edu.extern.model.{CertExemptApply, CertificateGrade}
-import org.openurp.edu.extern.service.{CertExemptApplyService, ExemptionService}
+import org.openurp.edu.exempt.model.CertExemptApply
+import org.openurp.edu.exempt.service.{CertExemptApplyService, ExemptionService}
+import org.openurp.edu.extern.model.CertificateGrade
 import org.openurp.edu.program.domain.CoursePlanProvider
 
 import java.time.Instant
@@ -37,7 +38,7 @@ class CertExemptApplyServiceImpl extends CertExemptApplyService {
   def accept(apply: CertExemptApply): Unit = {
     val grade = convert(apply)
     entityDao.saveOrUpdate(grade)
-    exemptionService.addExemption(grade, grade.courses)
+    exemptionService.addExemption(grade, grade.exempts)
     apply.status = AuditStatus.Passed
     entityDao.saveOrUpdate(apply)
   }
@@ -45,7 +46,7 @@ class CertExemptApplyServiceImpl extends CertExemptApplyService {
   def reject(apply: CertExemptApply): Unit = {
     val grade = convert(apply)
     if grade.persisted then entityDao.remove(grade) //FIXME 如果是管理员导入的，这种删除有点玄
-    grade.courses foreach { c =>
+    grade.exempts foreach { c =>
       exemptionService.removeExemption(grade, c)
     }
     apply.status = AuditStatus.Rejected
@@ -77,7 +78,7 @@ class CertExemptApplyServiceImpl extends CertExemptApplyService {
     grade.certificate = apply.certificate
     grade.status = 2
     grade.examStatus = new ExamStatus(ExamStatus.Normal)
-    grade.courses ++= apply.courses
+    grade.exempts ++= apply.courses
     grade.gradingMode = apply.gradingMode
     grade.updatedAt = Instant.now
     grade

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openurp.edu.extern.service
+package org.openurp.edu.exempt.service
 
 import org.openurp.base.edu.code.CourseType
 import org.openurp.base.edu.model.Course
