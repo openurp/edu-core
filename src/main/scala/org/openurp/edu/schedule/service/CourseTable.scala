@@ -22,7 +22,7 @@ import org.beangle.commons.lang.time.{WeekDay, WeekTime}
 import org.beangle.data.model.Entity
 import org.openurp.base.edu.model.TimeSetting
 import org.openurp.base.model.Semester
-import org.openurp.edu.clazz.model.{Clazz, Session}
+import org.openurp.edu.clazz.model.{Clazz, ClazzActivity}
 
 import scala.collection.mutable
 
@@ -40,7 +40,7 @@ object CourseTable {
 class CourseTable(val semester: Semester, val resource: Object, val category: String) {
   var style = CourseTable.Style.WEEK_TABLE
   var clazzes: Seq[Clazz] = _
-  var sessions: Seq[Session] = Seq.empty
+  var activities: Seq[ClazzActivity] = Seq.empty
   var placePublished: Boolean = _
   var timePublished: Boolean = _
   var timeSetting: TimeSetting = _
@@ -51,17 +51,17 @@ class CourseTable(val semester: Semester, val resource: Object, val category: St
 
   def setClazzes(classList: Seq[Clazz], wt: Iterable[WeekTime]): Unit = {
     clazzes = classList
-    val ss = new mutable.ArrayBuffer[Session]
+    val ss = new mutable.ArrayBuffer[ClazzActivity]
     if wt == null then
-      sessions = clazzes.flatMap(_.schedule.sessions)
+      activities = clazzes.flatMap(_.schedule.activities)
     else
       classList foreach { clazz =>
-        clazz.schedule.sessions foreach { s =>
+        clazz.schedule.activities foreach { s =>
           val matched = wt.exists(wt => wt.startOn == s.time.startOn && (wt.weekstate & s.time.weekstate).value > 0)
           if matched then ss.addOne(s)
         }
       }
-      sessions = ss.toSeq
+      activities = ss.toSeq
   }
 
   def weekdays: collection.Seq[WeekDay] = {
