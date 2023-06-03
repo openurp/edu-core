@@ -43,7 +43,7 @@ class MakeupCourseServiceImpl extends MakeupCourseService {
         newMc.depart = makeupCourse.depart
         newMc.semester = makeupCourse.semester
         for (taker <- makeupCourse.takers) {
-          if (squad.id == taker.std.state.map(_.squad.map(_.id)).getOrElse(0)) {
+          if (squad.id == taker.std.state.map(_.squad.map(_.id)).getOrElse(0L)) {
             newMc.takers += new FinalMakeupTaker(newMc, taker.std, taker.courseType)
           }
         }
