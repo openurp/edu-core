@@ -27,7 +27,6 @@ import org.openurp.base.std.model.Student
 import org.openurp.code.edu.model.CourseTakeType
 import org.openurp.edu.exempt.service.ExemptionService
 import org.openurp.edu.extern.model.{CertificateGrade, ExternGrade}
-import org.openurp.edu.exempt.service.impl.ExemptionCourse
 import org.openurp.edu.grade.model.{CourseGrade, Grade}
 import org.openurp.edu.program.domain.CoursePlanProvider
 import org.openurp.edu.program.model.{CoursePlan, PlanCourse, Program}
@@ -105,7 +104,7 @@ class ExemptionServiceImpl extends ExemptionService {
   override def addExemption(eg: ExternGrade, courses: Iterable[Course]): Unit = {
     val remark = eg.externStudent.school.name + " " + eg.courseName + " " + eg.scoreText
     val std = eg.externStudent.std
-    addCourseGrades(std, courses, remark)
+    addCourseGrades(std, courses, s"${eg.id}@ExternGrade", remark)
     val emptyCourses = eg.exempts filter (x => getExemptionGrades(std, x).isEmpty)
     eg.exempts.subtractAll(emptyCourses)
     eg.exempts ++= courses
@@ -115,7 +114,7 @@ class ExemptionServiceImpl extends ExemptionService {
   override def addExemption(cg: CertificateGrade, courses: Iterable[Course]): Unit = {
     val remark = cg.subject.name + " " + cg.scoreText
     val std = cg.std
-    addCourseGrades(std, courses, remark)
+    addCourseGrades(std, courses, s"${cg.id}@CertificateGrade", remark)
     val emptyCourses = cg.exempts filter (x => getExemptionGrades(std, x).isEmpty)
     cg.exempts.subtractAll(emptyCourses)
     cg.exempts ++= courses
@@ -129,11 +128,11 @@ class ExemptionServiceImpl extends ExemptionService {
     entityDao.search(cgQuery)
   }
 
-  private def addCourseGrades(std: Student, courses: Iterable[Course], remark: String): Unit = {
+  private def addCourseGrades(std: Student, courses: Iterable[Course], provider: String, remark: String): Unit = {
     //1. 删除过往认定过的，不属于目前该范围的成绩
     val cgQuery = OqlBuilder.from(classOf[CourseGrade], "cg")
     cgQuery.where("cg.std=:std and cg.courseTakeType.id=:exemptionTypeId", std, CourseTakeType.Exemption)
-    cgQuery.where("cg.remark=:remark", remark)
+    cgQuery.where("cg.provider=:provider", provider)
     val exemptGrades = entityDao.search(cgQuery)
     val courseSet = courses.toSet
     entityDao.remove(exemptGrades.filter(x => !courseSet.contains(x.course)))
@@ -155,7 +154,7 @@ class ExemptionServiceImpl extends ExemptionService {
       if null == semester then semester = semesterService.get(std.project, LocalDate.now)
       if (null == courseType) courseType = c.courseType
 
-      val grade = convertor.convert(std, ExemptionCourse(c, courseType, semester), remark)
+      val grade = convertor.convert(std, ExemptionCourse(c, courseType, semester), provider, remark)
       entityDao.saveOrUpdate(grade)
     }
   }

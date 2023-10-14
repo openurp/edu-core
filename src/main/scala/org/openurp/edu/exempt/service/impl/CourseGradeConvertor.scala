@@ -34,7 +34,7 @@ class CourseGradeConvertor(entityDao: EntityDao) {
   courseTakeType.id = CourseTakeType.Exemption
   private val gaGradeType = entityDao.get(classOf[GradeType], GradeType.EndGa)
 
-  def convert(std: Student, ec: ExemptionCourse, remark: String): CourseGrade = {
+  def convert(std: Student, ec: ExemptionCourse, provider: String, remark: String): CourseGrade = {
     val cgQuery = OqlBuilder.from(classOf[CourseGrade], "cg")
     cgQuery.where("cg.std=:std and cg.course=:course and cg.semester=:semester", std, ec.course, ec.semester)
     val courseGrades = entityDao.search(cgQuery)
@@ -44,11 +44,12 @@ class CourseGradeConvertor(entityDao: EntityDao) {
         cg.project = std.project
         cg.std = std
         cg.crn = "--"
+        cg.provider = Some(provider)
         cg.semester = ec.semester
         cg.course = ec.course
         cg.createdAt = Instant.now
         cg.courseType = ec.courseType
-        cg.examMode =ec.course.examMode
+        cg.examMode = ec.course.examMode
         cg
       } else {
         courseGrades.head
@@ -71,6 +72,7 @@ class CourseGradeConvertor(entityDao: EntityDao) {
     courseGrade.updatedAt = Instant.now
     courseGrade.operator = Some(Securities.user)
     courseGrade.updatedAt = Instant.now
+    courseGrade.provider = Some(provider)
     courseGrade.remark = Some(remark)
     var gaGrade = courseGrade.getGaGrade(gaGradeType).orNull
     if (gaGrade == null) {

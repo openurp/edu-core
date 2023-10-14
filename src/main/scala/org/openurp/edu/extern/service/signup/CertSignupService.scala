@@ -58,6 +58,7 @@ trait CertSignupService {
    */
   def get(std: Student, setting: CertSignupSetting): Option[CertSignup]
 
+  def get(std: Student, config: CertSignupConfig): Seq[CertSignup]
   /**
    * 获得学生这次期号中的报名记录
    *

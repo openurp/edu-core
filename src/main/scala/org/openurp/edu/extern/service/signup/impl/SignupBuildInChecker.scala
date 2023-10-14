@@ -17,16 +17,13 @@
 
 package org.openurp.edu.extern.service.signup.impl
 
-import org.beangle.data.dao.OqlBuilder
 import org.openurp.base.std.model.Student
 import org.openurp.edu.extern.config.CertSignupSetting
-import org.openurp.edu.extern.model.CertificateGrade
 import org.openurp.edu.extern.service.CertificateGradeService
 import org.openurp.edu.extern.service.signup.{CertSignupChecker, CertSignupService}
 
 import java.time.LocalDate
 import java.util
-import java.util.List
 
 class SignupBuildInChecker extends CertSignupChecker {
   var certificateGradeService: CertificateGradeService = _
@@ -46,6 +43,11 @@ class SignupBuildInChecker extends CertSignupChecker {
       if (!certificateGradeService.isPass(student, setting.dependsOn.get)) return "尚未通过先修科目"
     }
 
+    if (setting.config.maxSubject > 0) {
+      if (examSignupService.get(student, setting.config).size >= setting.config.maxSubject) {
+        return s"本次报名最多报名${setting.config.maxSubject}个科目,如需报名，请取消其他科目。"
+      }
+    }
     if (examSignupService.get(student, setting).nonEmpty) {
       return "不能重复报名"
     }

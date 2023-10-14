@@ -93,6 +93,13 @@ class DefaultCertSignupService extends CertSignupService {
     entityDao.search(query).headOption
   }
 
+  override def get(std: Student, config: CertSignupConfig): Seq[CertSignup] = {
+    val query = OqlBuilder.from(classOf[CertSignup], "signup")
+    query.where("signup.std = :std", std)
+    query.where("signup.updatedAt between :start and :end", config.beginAt, config.endAt)
+    entityDao.search(query)
+  }
+
   override def search(std: Student, start: LocalDate, end: LocalDate): Iterable[CertSignup] = {
     val query = OqlBuilder.from(classOf[CertSignup], "signup")
     query.where("signup.std = :std", std)
