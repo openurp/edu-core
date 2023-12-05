@@ -21,7 +21,7 @@ import com.google.gson.Gson
 import org.beangle.commons.collection.Collections
 import org.beangle.commons.lang.Strings
 import org.openurp.base.model.Project
-import org.openurp.base.service.ProjectPropertyService
+import org.openurp.base.service.ProjectConfigService
 import org.openurp.code.edu.model.{CourseTakeType, ExamStatus, GradeType}
 import org.openurp.code.service.CodeService
 import org.openurp.edu.grade.BaseServiceImpl
@@ -34,10 +34,10 @@ class CourseGradeSettingsImpl extends BaseServiceImpl with CourseGradeSettings {
 
   var codeService: CodeService = _
 
-  var projectPropertyService: ProjectPropertyService = _
+  var configService: ProjectConfigService = _
 
   def getSetting(project: Project): CourseGradeSetting = {
-    val settingStr = projectPropertyService.get(project, "edu.grade.setting", "")
+    val settingStr = configService.get(project, "edu.grade.setting", "")
     var setting: CourseGradeSetting = null
     if (Strings.isNotBlank(settingStr)) {
       setting = CourseGradeSettingsImpl.parse(settingStr)

@@ -31,7 +31,7 @@ import org.openurp.edu.grade.model.{CourseGrade, Grade}
 import org.openurp.edu.program.domain.CoursePlanProvider
 import org.openurp.edu.program.model.{CoursePlan, PlanCourse, Program}
 
-import java.time.LocalDate
+import java.time.{LocalDate, YearMonth}
 
 class ExemptionServiceImpl extends ExemptionService {
 
@@ -104,7 +104,7 @@ class ExemptionServiceImpl extends ExemptionService {
   override def addExemption(eg: ExternGrade, courses: Iterable[Course]): Unit = {
     val remark = eg.externStudent.school.name + " " + eg.courseName + " " + eg.scoreText
     val std = eg.externStudent.std
-    addCourseGrades(std, courses, s"${eg.id}@ExternGrade", remark)
+    addCourseGrades(std, courses, s"${eg.id}@ExternGrade", Some(eg.acquiredOn), remark)
     val emptyCourses = eg.exempts filter (x => getExemptionGrades(std, x).isEmpty)
     eg.exempts.subtractAll(emptyCourses)
     eg.exempts ++= courses
@@ -114,7 +114,7 @@ class ExemptionServiceImpl extends ExemptionService {
   override def addExemption(cg: CertificateGrade, courses: Iterable[Course]): Unit = {
     val remark = cg.subject.name + " " + cg.scoreText
     val std = cg.std
-    addCourseGrades(std, courses, s"${cg.id}@CertificateGrade", remark)
+    addCourseGrades(std, courses, s"${cg.id}@CertificateGrade", None, remark)
     val emptyCourses = cg.exempts filter (x => getExemptionGrades(std, x).isEmpty)
     cg.exempts.subtractAll(emptyCourses)
     cg.exempts ++= courses
@@ -128,7 +128,7 @@ class ExemptionServiceImpl extends ExemptionService {
     entityDao.search(cgQuery)
   }
 
-  private def addCourseGrades(std: Student, courses: Iterable[Course], provider: String, remark: String): Unit = {
+  private def addCourseGrades(std: Student, courses: Iterable[Course], provider: String, acquireOn: Option[YearMonth], remark: String): Unit = {
     //1. 删除过往认定过的，不属于目前该范围的成绩
     val cgQuery = OqlBuilder.from(classOf[CourseGrade], "cg")
     cgQuery.where("cg.std=:std and cg.courseTakeType.id=:exemptionTypeId", std, CourseTakeType.Exemption)
@@ -139,16 +139,21 @@ class ExemptionServiceImpl extends ExemptionService {
 
     //2. 重新建立成绩
     val convertor = new CourseGradeConvertor(entityDao)
+    val coursePlan = coursePlanProvider.getCoursePlan(std)
     courses foreach { c =>
       var semester: Semester = null
       var courseType: CourseType = null
       coursePlanProvider.getPlanCourse(std, c) foreach { pc =>
         courseType = pc.group.courseType
-        pc.terms.termList.headOption foreach { term =>
-          coursePlanProvider.getCoursePlan(std) foreach { plan =>
-            val program = plan.program
-            semester = semesterService.get(std.project, program.beginOn, program.endOn, term).orNull
+        if (acquireOn.isEmpty || acquireOn.get.atDay(1).isBefore(std.beginOn)) {
+          pc.terms.termList.headOption foreach { term =>
+            coursePlan foreach { plan =>
+              val program = plan.program
+              semester = semesterService.get(std.project, program.beginOn, program.endOn, term).orNull
+            }
           }
+        } else {
+          semester = semesterService.get(std.project, acquireOn.get.atDay(1))
         }
       }
       if null == semester then semester = semesterService.get(std.project, LocalDate.now)

@@ -25,7 +25,7 @@ import org.beangle.data.dao.{Operation, OqlBuilder}
 import org.beangle.data.model.Entity
 import org.beangle.security.Securities
 import org.openurp.base.model.Project
-import org.openurp.base.service.ProjectPropertyService
+import org.openurp.base.service.ProjectConfigService
 import org.openurp.code.edu.model.{CourseTakeType, GradeType, GradingMode}
 import org.openurp.edu.clazz.model.Clazz
 import org.openurp.edu.grade.BaseServiceImpl
@@ -33,6 +33,7 @@ import org.openurp.edu.grade.model.*
 import org.openurp.edu.grade.model.Grade.Status.{New, Published}
 import org.openurp.edu.grade.service.*
 import org.openurp.edu.program.domain.CoursePlanProvider
+import org.openurp.edu.service.Features
 
 import java.time.Instant
 
@@ -46,7 +47,7 @@ class ClazzGradeServiceImpl extends BaseServiceImpl with ClazzGradeService {
 
   var publishStack: CourseGradePublishStack = _
 
-  var projectPropertyService: ProjectPropertyService = _
+  var projectConfigService: ProjectConfigService = _
 
   var settings: CourseGradeSettings = _
 
@@ -252,7 +253,7 @@ class ClazzGradeServiceImpl extends BaseServiceImpl with ClazzGradeService {
     precision match {
       case None =>
         if (!state.persisted || state.gaStates.isEmpty) {
-          state.scorePrecision = projectPropertyService.get(clazz.project, "edu.grade.score_precision", "0").toInt
+          state.scorePrecision = projectConfigService.get(clazz.project, Features.GradeScorePrecision)
         }
       case Some(x) => state.scorePrecision = x
     }

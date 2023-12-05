@@ -19,13 +19,11 @@ package org.openurp.edu.grade.service.impl
 
 import org.beangle.commons.collection.Collections
 import org.beangle.data.dao.OqlBuilder
-import org.openurp.code.edu.model.ExamType
-import org.openurp.edu.grade.service.MakeupStdStrategy
-import org.openurp.edu.clazz.model.CourseTaker
+import org.openurp.code.edu.model.{ExamType, GradeType}
+import org.openurp.edu.clazz.model.{Clazz, CourseTaker}
 import org.openurp.edu.exam.model.ExamTaker
-import org.openurp.edu.clazz.model.Clazz
-import org.openurp.code.edu.model.GradeType
 import org.openurp.edu.grade.BaseServiceImpl
+import org.openurp.edu.grade.service.MakeupStdStrategy
 
 /**
  * 按照排考情况，统计补缓名单
@@ -35,9 +33,8 @@ class MakeupByExamStrategy extends BaseServiceImpl with MakeupStdStrategy {
   def getCourseTakers(clazz: Clazz): Seq[CourseTaker] = {
     val query = OqlBuilder.from(classOf[CourseTaker], "taker")
     query.where("taker.clazz = :clazz", clazz).where(" exists (from " + classOf[ExamTaker].getName + " et " +
-      " where et.std = taker.std and et.clazz = taker.clazz and et.examType.id in(:examTypeIds))", Array(
-      ExamType.Makeup,
-      ExamType.Delay))
+      " where et.std = taker.std and et.clazz = taker.clazz and et.examType in(:examTypes))",
+      Array(new ExamType(ExamType.Makeup), new ExamType(ExamType.Delay)))
     entityDao.search(query)
   }
 
@@ -46,17 +43,15 @@ class MakeupByExamStrategy extends BaseServiceImpl with MakeupStdStrategy {
 
     val clazzMap = Collections.newMap[Long, Clazz]
     for (clazz <- clazzes) clazzMap.put(clazz.id, clazz)
-    val query = OqlBuilder.from(classOf[CourseTaker], "taker")
-    query.where("taker.clazz in (:clazzes)", clazzes).where(" exists (from " + classOf[ExamTaker].getName + " et " +
-      " where et.std = taker.std and et.clazz = taker.clazz and et.examType.id in(:examTypeIds))", Array(
-      ExamType.Makeup,
-      ExamType.Delay))
+    val query = OqlBuilder.from[Array[Any]](classOf[CourseTaker].getName, "taker")
+    query.where("taker.clazz in (:clazzes)", clazzes)
+      .where(" exists (from " + classOf[ExamTaker].getName + " et " +
+        " where et.std = taker.std and et.clazz = taker.clazz and et.examType in(:examTypes))",
+        Array(new ExamType(ExamType.Makeup), new ExamType(ExamType.Delay)))
       .select("taker.clazz.id,count(*)")
       .groupBy("taker.clazz.id")
-    val rs = entityDao.search(query)
     val counts = Collections.newMap[Clazz, Number]
-    for (obj <- rs) {
-      val count = obj.asInstanceOf[Array[Any]]
+    entityDao.search(query) foreach { count =>
       counts.put(clazzMap(count(0).asInstanceOf[Long]), count(1).asInstanceOf[Number])
     }
     counts
