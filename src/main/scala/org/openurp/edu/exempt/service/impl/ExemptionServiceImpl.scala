@@ -112,7 +112,7 @@ class ExemptionServiceImpl extends ExemptionService {
   }
 
   override def addExemption(cg: CertificateGrade, courses: Iterable[Course]): Unit = {
-    val remark = cg.subject.name + " " + cg.scoreText
+    val remark = cg.certificate.name + " " + cg.scoreText
     val std = cg.std
     addCourseGrades(std, courses, s"${cg.id}@CertificateGrade", None, remark)
     val emptyCourses = cg.exempts filter (x => getExemptionGrades(std, x).isEmpty)

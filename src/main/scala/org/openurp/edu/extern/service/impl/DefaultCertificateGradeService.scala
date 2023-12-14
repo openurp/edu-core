@@ -19,33 +19,33 @@ package org.openurp.edu.extern.service.impl
 
 import org.beangle.data.dao.{EntityDao, OqlBuilder}
 import org.openurp.base.std.model.Student
-import org.openurp.edu.extern.code.{CertificateCategory, CertificateSubject}
+import org.openurp.edu.extern.code.Certificate
 import org.openurp.edu.extern.model.CertificateGrade
 import org.openurp.edu.extern.service.CertificateGradeService
 
 class DefaultCertificateGradeService extends CertificateGradeService {
   var entityDao: EntityDao = _
 
-  override def getBest(std: Student, category: CertificateCategory): CertificateGrade = {
+  override def getBest(std: Student, cert: Certificate): CertificateGrade = {
     val builder = OqlBuilder.from(classOf[CertificateGrade], "g")
     builder.where("g.std=:std", std)
-    builder.where("g.subject.category = :category", category)
+    builder.where("g.certificate = :cert", cert)
     builder.where("not exists(from " + classOf[CertificateGrade].getName +
-      " g2 where g2.std=g.std and g2.subject =g.subject and g2.score > g.score)")
+      " g2 where g2.std=g.std and g2.certificate =g.certificate and g2.score > g.score)")
     entityDao.search(builder).headOption.orNull
   }
 
-  override def getPassed(std: Student, subjects: Iterable[CertificateSubject]): List[CertificateGrade] = {
+  override def getPassed(std: Student, certificates: Iterable[Certificate]): List[CertificateGrade] = {
     val builder = OqlBuilder.from(classOf[CertificateGrade], "g")
     builder.where("g.std=:std", std)
-    builder.where("g.subject in (:subjects)", subjects)
+    builder.where("g.certificate in (:certificates)", certificates)
     builder.where("g.passed=true")
     entityDao.search(builder).toList
   }
 
-  override def isPass(std: Student, subject: CertificateSubject): Boolean = {
-    val grades = entityDao.findBy(classOf[CertificateGrade], "std", List(std))
-    grades.filter(_.passed).nonEmpty
+  override def isPass(std: Student, certificate: Certificate): Boolean = {
+    val grades = entityDao.findBy(classOf[CertificateGrade], "std" -> std, "certificate" -> certificate)
+    grades.exists(_.passed)
   }
 
   override def get(std: Student, best: Boolean): Iterable[CertificateGrade] = {
@@ -53,7 +53,7 @@ class DefaultCertificateGradeService extends CertificateGradeService {
     builder.where("g.std=:std", std)
     if (best) {
       builder.where("not exists(from " + classOf[CertificateGrade].getName +
-        " g2 where g2.std=g.std and g2.subject =g.subject and g2.score > g.score)")
+        " g2 where g2.std=g.std and g2.certificate =g.certificate and g2.score > g.score)")
     }
     entityDao.search(builder)
   }

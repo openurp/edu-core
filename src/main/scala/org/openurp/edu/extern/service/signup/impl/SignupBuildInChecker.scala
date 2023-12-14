@@ -43,9 +43,9 @@ class SignupBuildInChecker extends CertSignupChecker {
       if (!certificateGradeService.isPass(student, setting.dependsOn.get)) return "尚未通过先修科目"
     }
 
-    if (setting.config.maxSubject > 0) {
-      if (examSignupService.get(student, setting.config).size >= setting.config.maxSubject) {
-        return s"本次报名最多报名${setting.config.maxSubject}个科目,如需报名，请取消其他科目。"
+    if (setting.config.maxOptions > 0) {
+      if (examSignupService.get(student, setting.config).size >= setting.config.maxOptions) {
+        return s"本次报名最多报名${setting.config.maxOptions}个科目,如需报名，请取消其他科目。"
       }
     }
     if (examSignupService.get(student, setting).nonEmpty) {
@@ -57,8 +57,8 @@ class SignupBuildInChecker extends CertSignupChecker {
     }
 
     if (!setting.reExamAllowed) {
-      if (certificateGradeService.isPass(student, setting.subject)) {
-        return setting.subject.name + "已通过，无需报名"
+      if (certificateGradeService.isPass(student, setting.certificate)) {
+        return setting.certificate.name + "已通过，无需报名"
       }
     }
     null
@@ -71,7 +71,7 @@ class SignupBuildInChecker extends CertSignupChecker {
         val config = setting.config
         val signed = examSignupService.search(student, config)
         signed exists { signup =>
-          config.getSetting(signup.subject).find(_.isTimeCollision(setting)).nonEmpty
+          config.getSetting(signup.certificate).exists(_.isTimeCollision(setting))
         }
     }
   }

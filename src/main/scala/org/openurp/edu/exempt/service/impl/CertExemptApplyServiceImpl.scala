@@ -17,15 +17,14 @@
 
 package org.openurp.edu.exempt.service.impl
 
-import org.beangle.commons.collection.Collections
 import org.beangle.commons.lang.Numbers
 import org.beangle.data.dao.{EntityDao, OqlBuilder}
 import org.openurp.base.model.AuditStatus
+import org.openurp.base.service.SemesterService
 import org.openurp.code.edu.model.ExamStatus
 import org.openurp.edu.exempt.model.CertExemptApply
 import org.openurp.edu.exempt.service.{CertExemptApplyService, ExemptionService}
 import org.openurp.edu.extern.model.CertificateGrade
-import org.openurp.edu.program.domain.CoursePlanProvider
 
 import java.time.Instant
 
@@ -34,6 +33,8 @@ class CertExemptApplyServiceImpl extends CertExemptApplyService {
   var entityDao: EntityDao = _
 
   var exemptionService: ExemptionService = _
+
+  var semesterService: SemesterService = _
 
   def accept(apply: CertExemptApply): Unit = {
     val grade = convert(apply)
@@ -56,7 +57,7 @@ class CertExemptApplyServiceImpl extends CertExemptApplyService {
   private def convert(apply: CertExemptApply): CertificateGrade = {
     val query = OqlBuilder.from(classOf[CertificateGrade], "cg")
     query.where("cg.std = :std", apply.std)
-    query.where("cg.subject = :subject", apply.subject)
+    query.where("cg.certificate = :certificate", apply.certificate)
     query.where("cg.acquiredOn = :acquiredOn", apply.acquiredOn)
     val grades = entityDao.search(query)
 
@@ -64,7 +65,7 @@ class CertExemptApplyServiceImpl extends CertExemptApplyService {
       case None =>
         val g = new CertificateGrade
         g.std = apply.std
-        g.subject = apply.subject
+        g.certificate = apply.certificate
         g.acquiredOn = apply.acquiredOn
         g
       case Some(g) => g
@@ -74,8 +75,11 @@ class CertExemptApplyServiceImpl extends CertExemptApplyService {
     if (Numbers.isDigits(apply.scoreText)) {
       grade.score = Some(Numbers.toFloat(apply.scoreText))
     }
+    grade.semester = semesterService.get(apply.std.project, apply.acquiredOn.atDay(1))
+    if (grade.semester == null) grade.semester = apply.semester
+
     grade.passed = true
-    grade.certificate = apply.certificate
+    grade.certificateNo = apply.certificateNo
     grade.status = 2
     grade.examStatus = new ExamStatus(ExamStatus.Normal)
     grade.exempts ++= apply.courses

@@ -47,7 +47,7 @@ class DefaultCertSignupService extends CertSignupService {
         }
       }
       signup.semester = setting.config.semester
-      signup.subject = setting.subject
+      signup.certificate = setting.certificate
       signup.updatedAt = Instant.now
       entityDao.saveOrUpdate(signup)
     }
@@ -57,7 +57,7 @@ class DefaultCertSignupService extends CertSignupService {
   private def getSignupCount(setting: CertSignupSetting): Int = {
     val query = OqlBuilder.from[Number](classOf[CertSignup].getName, "signup")
     query.where("signup.semester = :semester", setting.config.semester)
-    query.where("signup.subject = :subject", setting.subject)
+    query.where("signup.certificate = :certificate", setting.certificate)
     query.select("count(*)")
     entityDao.search(query).head.intValue
   }
@@ -74,7 +74,7 @@ class DefaultCertSignupService extends CertSignupService {
   }
 
   override def cancel(std: Student, setting: CertSignupSetting): String = { // 判断时间
-    if (!setting.config.opened || !setting.config.isTimeSuitable) {
+    if (!setting.config.isTimeSuitable) {
       CertSignupChecker.notInTime
     } else {
       get(std, setting) foreach { signup =>
@@ -89,7 +89,7 @@ class DefaultCertSignupService extends CertSignupService {
     val query = OqlBuilder.from(classOf[CertSignup], "signup")
     query.where("signup.std = :std", std)
     query.where("signup.updatedAt between :start and :end", config.beginAt, config.endAt)
-    query.where("signup.subject = :subject", setting.subject)
+    query.where("signup.certificate = :certificate", setting.certificate)
     entityDao.search(query).headOption
   }
 
@@ -114,13 +114,12 @@ class DefaultCertSignupService extends CertSignupService {
     val query = OqlBuilder.from(classOf[CertSignup], "signup")
     query.where("signup.semester = :semester", config.semester)
     query.where("signup.std = :std", std)
-    query.where("signup.subject in (:subjects)", config.subjects)
+    query.where("signup.certificate in (:certificates)", config.certificates)
     entityDao.search(query)
   }
 
   override def getOpenedSettings(project: Project): Iterable[CertSignupSetting] = {
     val query = OqlBuilder.from(classOf[CertSignupSetting], "setting")
-    query.where("setting.config.opened = true")
     query.where("setting.config.project = :project", project)
     query.where(":now  between setting.config.beginAt and setting.config.endAt", Instant.now)
     entityDao.search(query)
@@ -132,14 +131,14 @@ class DefaultCertSignupService extends CertSignupService {
   override def getOpenedConfigs(project: Project): Iterable[CertSignupConfig] = {
     val query = OqlBuilder.from(classOf[CertSignupConfig], "config")
     query.where("config.project = :project", project)
-    query.where("config.opened = true")
     query.where(":time between config.beginAt and config.endAt ", Instant.now)
+    query.cacheable()
     entityDao.search(query)
   }
 
   override def isExist(signup: CertSignup): Boolean = {
     val builder = OqlBuilder.from(classOf[CertSignup], "signup")
-    builder.where("signup.subject  =:subject", signup.subject)
+    builder.where("signup.certificate  =:certificate", signup.certificate)
     builder.where("signup.semester  =:semester", signup.semester)
     builder.where("signup.std =:std", signup.std)
     if (signup.persisted) builder.where("signup.id <>:id", signup.id)

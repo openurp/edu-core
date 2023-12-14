@@ -17,9 +17,8 @@
 
 package org.openurp.edu.extern.service.signup;
 
-import org.openurp.base.model.{Project, Semester}
+import org.openurp.base.model.Project
 import org.openurp.base.std.model.Student
-import org.openurp.edu.extern.code.CertificateSubject
 import org.openurp.edu.extern.config.{CertSignupConfig, CertSignupSetting}
 import org.openurp.edu.extern.model.CertSignup
 
@@ -59,6 +58,7 @@ trait CertSignupService {
   def get(std: Student, setting: CertSignupSetting): Option[CertSignup]
 
   def get(std: Student, config: CertSignupConfig): Seq[CertSignup]
+
   /**
    * 获得学生这次期号中的报名记录
    *
