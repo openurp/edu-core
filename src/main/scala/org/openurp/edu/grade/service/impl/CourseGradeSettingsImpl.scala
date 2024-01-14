@@ -68,8 +68,6 @@ object CourseGradeSettingsImpl {
       setting.noMakeupTakeTypes.addOne(toCourseTakeType(eleType))
     }
     setting.submitIsPublish = obj.get("submitIsPublish").asInstanceOf[java.lang.Boolean].booleanValue()
-    val delayIsGa = obj.get("delayIsGa").asInstanceOf[java.lang.Boolean]
-    if (null != delayIsGa) setting.delayIsGa = delayIsGa.booleanValue()
     setting
   }
 

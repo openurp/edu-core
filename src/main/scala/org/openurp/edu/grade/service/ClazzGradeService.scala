@@ -18,11 +18,15 @@
 package org.openurp.edu.grade.service
 
 import org.openurp.base.model.Project
+import org.openurp.base.std.model.Student
 import org.openurp.code.edu.model.{GradeType, GradingMode}
-import org.openurp.edu.clazz.model.Clazz
-import org.openurp.edu.grade.model.CourseGradeState
+import org.openurp.edu.clazz.model.{Clazz, CourseTaker}
+import org.openurp.edu.exam.model.ExamTaker
+import org.openurp.edu.grade.model.{CourseGrade, CourseGradeState}
 
 trait ClazzGradeService {
+  def getGrades(clazz: Clazz, courseTakers: Iterable[CourseTaker], addEmpty: Boolean): Map[Student, CourseGrade]
+
   /**
    * 按照成绩状态，重新计算成绩的<br>
    * 1、首先更改成绩的成绩记录方式<br>
@@ -51,7 +55,7 @@ trait ClazzGradeService {
    * 如果为空,则发布影响总评和最终
    * @param published
    */
-  def publish(clazzIdSeq: String, gradeTypes: Array[GradeType], published: Boolean): Unit
+  def publish(clazzIdSeq: String, gradeTypes: Iterable[GradeType], published: Boolean): Unit
 
   /**
    * 查询成绩状态
@@ -62,6 +66,7 @@ trait ClazzGradeService {
   def getState(clazz: Clazz): CourseGradeState
 
   /** 查询或创建一个默认的成绩状态
+   *
    * @param clazz
    * @param gradeTypes
    * @param precision
@@ -73,4 +78,6 @@ trait ClazzGradeService {
   def cleanZeroPercents(gradeState: CourseGradeState, gradeTypes: Iterable[GradeType]): List[GradeType]
 
   def getPublishableGradeTypes(project: Project): Seq[GradeType]
+
+  def isInputComplete(clazz: Clazz, courseTakers: Iterable[CourseTaker], gradeTypes: Iterable[GradeType]): Boolean
 }

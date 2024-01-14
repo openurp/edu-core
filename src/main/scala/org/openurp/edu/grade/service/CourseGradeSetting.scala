@@ -38,9 +38,6 @@ class CourseGradeSetting {
   /** 是否提交即发布 */
   var submitIsPublish = false
 
-  /** 缓考也作为最终 */
-  var delayIsGa = false
-
   def this(project: Project) = {
     this()
   }

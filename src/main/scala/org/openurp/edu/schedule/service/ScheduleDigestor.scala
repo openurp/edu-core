@@ -21,7 +21,7 @@ import org.beangle.commons.bean.orderings.MultiPropertyOrdering
 import org.beangle.commons.collection.Collections
 import org.beangle.commons.lang.Strings
 import org.beangle.commons.lang.time.{WeekState, WeekTime, Weeks}
-import org.openurp.base.edu.model.Teacher
+import org.openurp.base.hr.model.Teacher
 import org.openurp.base.model.Semester
 import org.openurp.edu.clazz.domain.WeekTimeBuilder
 import org.openurp.edu.clazz.model.{Clazz, ClazzActivity}

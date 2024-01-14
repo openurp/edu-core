@@ -19,15 +19,16 @@ package org.openurp.edu.grade.service.impl
 
 import org.beangle.commons.bean.orderings.PropertyOrdering
 import org.beangle.commons.collection.Collections
-import org.beangle.commons.lang.functor.Predicate
 import org.beangle.commons.lang.{Objects, Strings}
 import org.beangle.data.dao.{Operation, OqlBuilder}
 import org.beangle.data.model.Entity
 import org.beangle.security.Securities
 import org.openurp.base.model.Project
 import org.openurp.base.service.ProjectConfigService
+import org.openurp.base.std.model.Student
 import org.openurp.code.edu.model.{CourseTakeType, GradeType, GradingMode}
-import org.openurp.edu.clazz.model.Clazz
+import org.openurp.edu.clazz.model.{Clazz, CourseTaker}
+import org.openurp.edu.exam.model.ExamTaker
 import org.openurp.edu.grade.BaseServiceImpl
 import org.openurp.edu.grade.model.*
 import org.openurp.edu.grade.model.Grade.Status.{New, Published}
@@ -50,6 +51,8 @@ class ClazzGradeServiceImpl extends BaseServiceImpl with ClazzGradeService {
   var projectConfigService: ProjectConfigService = _
 
   var settings: CourseGradeSettings = _
+
+  var gradeTypePolicy: GradeTypePolicy = new DefaultGradeTypePolicy
 
   def getPublishableGradeTypes(project: Project): Seq[GradeType] = {
     // 查找除去最终成绩之外的所有可发布成绩
@@ -80,7 +83,7 @@ class ClazzGradeServiceImpl extends BaseServiceImpl with ClazzGradeService {
       calculator.calcAll(grade, gradeState)
     }
     entityDao.saveOrUpdate(grades)
-    if (!published.isEmpty) {
+    if (published.nonEmpty) {
       publish(gradeState.clazz.id.toString, published.toArray, true)
     }
   }
@@ -98,9 +101,74 @@ class ClazzGradeServiceImpl extends BaseServiceImpl with ClazzGradeService {
   }
 
   /**
+   * 查询一个教学班中的学生成绩
+   * <p>
+   * 要求能够查询到没有clazz_id的，但是是这个课程的学生的已有成绩（例如其他课程序号、或者免修得来的）。
+   *
+   * @param clazz
+   * @param courseTakers
+   * @return
+   */
+  override def getGrades(clazz: Clazz, courseTakers: Iterable[CourseTaker], addEmpty: Boolean): Map[Student, CourseGrade] = {
+    if (null == clazz || courseTakers == null || courseTakers.isEmpty) return Map.empty
+    //查找该教学任务的成绩
+    val query1 = OqlBuilder.from(classOf[CourseGrade], "cg").where("cg.clazz = :clazz", clazz)
+    val gradeMap = Collections.newMap[Student, CourseGrade]
+    val grades1 = entityDao.search(query1)
+    var stds = courseTakers.map(_.std).toSet
+    for (grade <- grades1) {
+      gradeMap.put(grade.std, grade)
+      stds -= grade.std
+    }
+    //查找可能出现任务为空，或者别的任务里的该班学生的成绩
+    if (stds.nonEmpty) {
+      val query2 = OqlBuilder.from(classOf[CourseGrade], "cg")
+        .where("cg.project = :project and cg.semester = :semester and cg.course = :course", clazz.project, clazz.semester, clazz.course)
+      query2.where("cg.std in(:stds)", stds)
+      val grades2 = entityDao.search(query2)
+      for (grade <- grades2) {
+        gradeMap.put(grade.std, grade)
+        stds -= grade.std
+      }
+    }
+    if addEmpty && stds.nonEmpty then stds foreach { std => gradeMap.put(std, new CourseGrade) }
+    gradeMap.toMap
+  }
+
+  override def isInputComplete(clazz: Clazz, courseTakers: Iterable[CourseTaker], gradeTypes: Iterable[GradeType]): Boolean = {
+    val examGradeTypes = gradeTypes.filter(!_.isGa)
+    val examTypes = gradeTypes.flatMap(_.examType)
+    val examTakers =
+      if courseTakers.isEmpty || examTypes.isEmpty then Map.empty
+      else
+        val query = OqlBuilder.from(classOf[ExamTaker], "examTaker").where("examTaker.clazz=:clazz", clazz)
+        query.where("examTaker.examType in (:examTypes)", examTypes)
+        entityDao.search(query).groupBy(_.std).map(x => (x._1, x._2.groupBy(_.examType).map(y => (y._1, y._2.head))))
+
+    var inputCount = 0
+    var gradeCount = 0
+    val gradeMap = this.getGrades(clazz, courseTakers, false)
+    courseTakers foreach { courseTaker =>
+      if (courseTaker.takeType.id != CourseTakeType.Exemption && courseTaker.takeType.id != CourseTakeType.Auditor) {
+        gradeTypes foreach { gradeType =>
+          if (!gradeType.isGa) {
+            val examTaker = gradeType.examType.flatMap(et => examTakers.get(courseTaker.std).flatMap(_.get(et)))
+            val suitable = gradeTypePolicy.isGradeFor(courseTaker, gradeType, examTaker.orNull)
+            if (suitable) inputCount += 1
+            gradeMap.get(courseTaker.std) foreach { grade =>
+              if (grade.getGrade(gradeType).nonEmpty) gradeCount += 1
+            }
+          }
+        }
+      }
+    }
+    gradeCount == inputCount
+  }
+
+  /**
    * 发布学生成绩
    */
-  def publish(clazzIdSeq: String, gradeTypes: Array[GradeType], published: Boolean): Unit = {
+  def publish(clazzIdSeq: String, gradeTypes: Iterable[GradeType], published: Boolean): Unit = {
     val ids2 = Strings.splitToLong(clazzIdSeq)
     val ids: Array[Long] = Array.ofDim(ids2.length)
     for (i <- 0 until ids.length) ids(i) = ids2(i).longValue
@@ -112,11 +180,10 @@ class ClazzGradeServiceImpl extends BaseServiceImpl with ClazzGradeService {
     }
   }
 
-  private def updateState(clazz: Clazz, gradeTypes: Array[GradeType], status: Int): Unit = {
+  private def updateState(clazz: Clazz, gradeTypes: Iterable[GradeType], status: Int): Unit = {
     val courseGradeStates = entityDao.findBy(classOf[CourseGradeState], "clazz", clazz)
-    var gradeState: CourseGradeState = null
+    val gradeState = if (courseGradeStates.isEmpty) new CourseGradeState else courseGradeStates.head
     for (gradeType <- gradeTypes) {
-      gradeState = if (courseGradeStates.isEmpty) new CourseGradeState else courseGradeStates.head
       if (gradeType.id == GradeType.Final) {
         gradeState.status = status
       } else {
@@ -253,7 +320,7 @@ class ClazzGradeServiceImpl extends BaseServiceImpl with ClazzGradeService {
     precision match {
       case None =>
         if (!state.persisted || state.gaStates.isEmpty) {
-          state.scorePrecision = projectConfigService.get(clazz.project, Features.GradeScorePrecision)
+          state.scorePrecision = projectConfigService.get(clazz.project, Features.Grade.ScorePrecision)
         }
       case Some(x) => state.scorePrecision = x
     }

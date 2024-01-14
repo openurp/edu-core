@@ -18,11 +18,13 @@
 package org.openurp.edu.grade.service.impl
 
 import org.beangle.data.dao.EntityDao
+import org.openurp.base.service.ProjectConfigService
 import org.openurp.base.std.model.Student
 import org.openurp.code.edu.model.{CourseTakeType, ExamStatus, GradeType, GradingMode}
 import org.openurp.edu.grade.domain.NumRounder
 import org.openurp.edu.grade.model.*
-import org.openurp.edu.grade.service.{CourseGradeCalculator, CourseGradeSettings, GradeRateService}
+import org.openurp.edu.grade.service.{CourseGradeCalculator, CourseGradeSetting, CourseGradeSettings, GradeRateService}
+import org.openurp.edu.service.Features
 
 import java.time.Instant
 
@@ -50,7 +52,7 @@ class DefaultCourseGradeCalculator extends CourseGradeCalculator {
 
   var gradeRateService: GradeRateService = _
 
-  var settings: CourseGradeSettings = _
+  var projectConfigService: ProjectConfigService = _
 
   var minEndScore: Float = 0
 
@@ -208,8 +210,8 @@ class DefaultCourseGradeCalculator extends CourseGradeCalculator {
     if (deGrade == null) return None
     if (null != deGrade.examStatus && deGrade.examStatus.cheating) return Some(0f)
 
-    val setting = settings.getSetting(grade.project)
-    if (setting.delayIsGa) return deGrade.score
+    val delayIsGa: Boolean = projectConfigService.get(grade.project, Features.Grade.DelayIsGa)
+    if (delayIsGa) return deGrade.score
 
     gaGrade = getGaGrade(grade, DelayGa)
     if (endIsGaWhenFreeListening && grade.freeListening) {
@@ -236,23 +238,24 @@ class DefaultCourseGradeCalculator extends CourseGradeCalculator {
     if (totalPercent < 100) {
       None
     } else {
-      if (scorePercent < 51) null else addDelta(gaGrade, Some(ga), state)
+      if (scorePercent < 51) None else addDelta(gaGrade, Some(ga), state)
     }
   }
 
   protected def calcMakeupGaScore(grade: CourseGrade, gradeState: CourseGradeState): Option[Float] = {
-    var gascore: Option[Float] = None
-    var gaGrade = grade.getGaGrade(MakeupGa).orNull
-    if (gaGrade != null) {
-      gascore = gaGrade.score
-      if (grade.getExamGrade(Makeup).isEmpty) return gascore
+    grade.getExamGrade(Makeup) match {
+      case None => grade.getGaGrade(MakeupGa).flatMap(_.score)
+      case Some(m) =>
+        if null != m.examStatus && m.examStatus.cheating then Some(0f)
+        else if m.score.isEmpty then None
+        else
+          val gaGrade = getGaGrade(grade, MakeupGa)
+          addDelta(gaGrade, m.score, gradeState)
+          val makeupIsGa: Boolean = projectConfigService.get(grade.project, Features.Grade.MakeupIsGa)
+          if makeupIsGa then gaGrade.score
+          else if java.lang.Float.compare(gaGrade.score.get, 60) >= 0 then Some(60f)
+          else gaGrade.score
     }
-    val makeup = grade.getExamGrade(Makeup).orNull
-    if (null == makeup || makeup.score.isEmpty) return None
-    if (null != makeup.examStatus && makeup.examStatus.cheating) return Some(0f)
-    gaGrade = getGaGrade(grade, MakeupGa)
-    addDelta(gaGrade, makeup.score, gradeState)
-    if (java.lang.Float.compare(gaGrade.score.get, 60) >= 0) Some(60f) else gaGrade.score
   }
 
   protected def calcScore(grade: CourseGrade): Option[Float] = {

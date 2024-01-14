@@ -19,15 +19,14 @@ package org.openurp.edu.grade.service.impl
 
 import org.beangle.commons.collection.Collections
 import org.beangle.data.transfer.exporter.DefaultPropertyExtractor
-import org.openurp.base.edu.model.Teacher
-import org.openurp.edu.grade.model.CourseGradeState
+import org.openurp.base.hr.model.Teacher
 import org.openurp.edu.clazz.model.Clazz
+import org.openurp.edu.grade.model.CourseGradeState
 
-class GradeStatExtractor  extends DefaultPropertyExtractor {
+class GradeStatExtractor extends DefaultPropertyExtractor {
 
   override def getPropertyValue(target: Object, property: String): Any = {
     if ("teachers" == property) {
-      var teacherName = ""
       var teachers = Collections.newBuffer[Teacher]
       if (target.isInstanceOf[Clazz]) {
         val clazz = target.asInstanceOf[Clazz]
@@ -36,16 +35,7 @@ class GradeStatExtractor  extends DefaultPropertyExtractor {
         val gradeState = target.asInstanceOf[CourseGradeState]
         teachers = gradeState.clazz.teachers
       }
-      if (teachers.size == 0) {
-        return "未安排教师"
-      }
-      for (i <- 0 until teachers.size) {
-        if (i > 0) {
-          teacherName += ","
-        }
-        teacherName += teachers(i).name
-      }
-      teacherName
+      if teachers.isEmpty then "未安排教师" else teachers.map(_.name).mkString(",")
     } else {
       super.getPropertyValue(target, property)
     }
