@@ -140,7 +140,7 @@ class BestGpaStatService extends GpaStatService {
   }
 
   override def statBySemester(std: Student, semesters: collection.Seq[Semester]): StdGpa = {
-    stat(std, courseGradeProvider.getPublished(std, semesters.toSeq: _*))
+    stat(std, courseGradeProvider.getPublished(std, semesters))
   }
 
 }

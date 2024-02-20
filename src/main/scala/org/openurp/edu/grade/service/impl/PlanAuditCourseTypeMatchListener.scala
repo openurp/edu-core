@@ -18,7 +18,7 @@
 package org.openurp.edu.grade.service.impl
 
 import org.beangle.commons.collection.Collections
-import org.openurp.base.edu.code.CourseType
+import org.openurp.code.edu.model.CourseType
 import org.openurp.edu.grade.domain.{PlanAuditContext, PlanAuditListener}
 import org.openurp.edu.grade.model.{CourseAuditResult, GroupAuditResult}
 import org.openurp.edu.program.model.CourseGroup
@@ -31,14 +31,14 @@ import org.openurp.edu.program.model.CourseGroup
  */
 class PlanAuditCourseTypeMatchListener extends PlanAuditListener {
 
-  protected def addGroupResult(results: collection.mutable.Map[CourseType, GroupAuditResult], gr: GroupAuditResult) : Unit = {
+  protected def addGroupResult(results: collection.mutable.Map[CourseType, GroupAuditResult], gr: GroupAuditResult): Unit = {
     results.put(gr.courseType, gr)
     for (child <- gr.children) {
       addGroupResult(results, child)
     }
   }
 
-  override def end(context: PlanAuditContext) : Unit = {
+  override def end(context: PlanAuditContext): Unit = {
     val results = Collections.newMap[CourseType, GroupAuditResult]
     val stdGrade = context.stdGrade
     val restCourses = stdGrade.restCourses

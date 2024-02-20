@@ -42,9 +42,8 @@ class TranscriptGpaProvider extends TranscriptDataProvider {
   def getDatas(stds: Seq[Student], options: collection.Map[String, String]): AnyRef = {
     val matched = getFilters(options)
     val datas = Collections.newMap[Student, StdGpa]
-    val gradeMap = courseGradeProvider.getPublished(stds)
     for (std <- stds) {
-      var grades: Iterable[CourseGrade] = gradeMap(std)
+      var grades: Iterable[CourseGrade] = courseGradeProvider.getPublished(std)
       for (filter <- matched) grades = filter.filter(grades)
       datas.put(std, gpaPolicy.calc(std, grades, true))
     }

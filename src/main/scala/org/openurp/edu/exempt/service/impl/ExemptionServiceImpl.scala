@@ -19,12 +19,11 @@ package org.openurp.edu.exempt.service.impl
 
 import org.beangle.commons.collection.Collections
 import org.beangle.data.dao.{EntityDao, OqlBuilder}
-import org.openurp.base.edu.code.CourseType
 import org.openurp.base.edu.model.Course
 import org.openurp.base.model.Semester
 import org.openurp.base.service.SemesterService
 import org.openurp.base.std.model.Student
-import org.openurp.code.edu.model.CourseTakeType
+import org.openurp.code.edu.model.{CourseTakeType, CourseType}
 import org.openurp.edu.exempt.service.ExemptionService
 import org.openurp.edu.extern.model.{CertificateGrade, ExternGrade}
 import org.openurp.edu.grade.model.{CourseGrade, Grade}

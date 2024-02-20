@@ -17,20 +17,17 @@
 
 package org.openurp.edu.grade.service.impl
 
-import java.time.LocalDate
-
 import org.beangle.commons.collection.Collections
 import org.beangle.data.dao.{EntityDao, OqlBuilder}
-import org.openurp.base.edu.code.CourseType
 import org.openurp.base.edu.model.Course
+import org.openurp.code.edu.model.CourseType
 import org.openurp.edu.clazz.model.CourseTaker
-import org.openurp.edu.grade.model.CourseGrade
-import org.openurp.edu.grade.model.Grade
 import org.openurp.edu.grade.domain.{PlanAuditContext, PlanAuditListener}
-import org.openurp.edu.grade.model.{CourseAuditResult, GroupAuditResult}
-import org.openurp.edu.grade.service.impl.PlanAuditCourseTakerListener._
+import org.openurp.edu.grade.model.{CourseAuditResult, CourseGrade, Grade, GroupAuditResult}
+import org.openurp.edu.grade.service.impl.PlanAuditCourseTakerListener.*
 import org.openurp.edu.program.model.{CourseGroup, PlanCourse}
 
+import java.time.LocalDate
 import scala.collection.mutable
 
 object PlanAuditCourseTakerListener {

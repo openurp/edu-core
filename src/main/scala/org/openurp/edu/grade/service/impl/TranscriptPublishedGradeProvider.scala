@@ -19,15 +19,13 @@ package org.openurp.edu.grade.service.impl
 
 import org.beangle.commons.collection.Collections
 import org.openurp.base.std.model.Student
+import org.openurp.edu.grade.domain.{CourseGradeProvider, GradeFilter}
 import org.openurp.edu.grade.model.CourseGrade
-import org.openurp.edu.grade.domain.CourseGradeProvider
-import org.openurp.edu.grade.service.impl.GradeFilterRegistry
 import org.openurp.edu.grade.service.TranscriptDataProvider
-import org.openurp.edu.grade.domain.GradeFilter
+import org.openurp.edu.grade.service.impl.GradeFilterRegistry
 
 /**
  * 提供成绩单发布的成绩及其过滤逻辑
- *
  *
  * @since 2012-05-21
  */
@@ -42,9 +40,8 @@ class TranscriptPublishedGradeProvider extends TranscriptDataProvider {
   def getDatas(stds: Seq[Student], options: collection.Map[String, String]): AnyRef = {
     val datas = Collections.newMap[Student, collection.Iterable[CourseGrade]]
     val matched = getFilters(options)
-    val gradeMap = courseGradeProvider.getPublished(stds)
     for (std <- stds) {
-      var grades:Iterable[CourseGrade] = gradeMap(std)
+      var grades: Iterable[CourseGrade] = courseGradeProvider.getPublished(std)
       for (filter <- matched) {
         grades = filter.filter(grades)
       }
@@ -55,7 +52,7 @@ class TranscriptPublishedGradeProvider extends TranscriptDataProvider {
 
   protected def getFilters(options: collection.Map[String, String]): Seq[GradeFilter] = {
     if (null == options || options.isEmpty) return List.empty
-    registry.getFilters(options.getOrElse("grade.filters",""))
+    registry.getFilters(options.getOrElse("grade.filters", ""))
   }
 
 }

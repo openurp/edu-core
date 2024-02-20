@@ -19,7 +19,7 @@ package org.openurp.edu.extern.service.impl
 
 import org.beangle.data.dao.{EntityDao, OqlBuilder}
 import org.openurp.base.std.model.Student
-import org.openurp.edu.extern.code.Certificate
+import org.openurp.code.edu.model.Certificate
 import org.openurp.edu.extern.model.CertificateGrade
 import org.openurp.edu.extern.service.CertificateGradeService
 

@@ -19,10 +19,9 @@ package org.openurp.edu.grade.service.impl
 
 import org.openurp.base.model.Semester
 import org.openurp.base.std.model.Student
+import org.openurp.edu.grade.domain.{CourseGradeProvider, DefaultGpaPolicy}
 import org.openurp.edu.grade.model.CourseGrade
-import org.openurp.edu.grade.domain.CourseGradeProvider
 import org.openurp.edu.grade.service.GpaService
-import org.openurp.edu.grade.domain.DefaultGpaPolicy
 
 class DefaultGpaService extends GpaService {
 
@@ -39,7 +38,7 @@ class DefaultGpaService extends GpaService {
   }
 
   def getGpa(std: Student, semester: Semester): Float = {
-    gpaPolicy.calcGpa(courseGradeProvider.getPublished(std, semester))
+    gpaPolicy.calcGpa(courseGradeProvider.getPublished(std, List(semester)))
   }
 
 }
