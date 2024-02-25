@@ -67,18 +67,6 @@ class ExemptionServiceImpl extends ExemptionService {
         } else None
     }
   }
-
-  def a(int: Int*):Unit={
-
-  }
-
-  def a(int: Long*)(implicit dummy: DummyImplicit): Unit = {
-
-  }
-
-  def a(int: String*)(implicit dummy: DummyImplicit): Unit = {
-
-  }
   override def getSemester(program: Program, term: Option[Int]): Option[Semester] = {
     term match {
       case Some(t) => semesterService.get(program.project, program.beginOn, program.endOn, t)
