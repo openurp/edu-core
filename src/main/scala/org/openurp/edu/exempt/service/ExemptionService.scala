@@ -20,14 +20,13 @@ package org.openurp.edu.exempt.service
 import org.openurp.base.edu.model.Course
 import org.openurp.base.model.Semester
 import org.openurp.base.std.model.Student
-import org.openurp.code.edu.model.{CourseType, ExamMode, GradingMode}
 import org.openurp.edu.extern.model.{CertificateGrade, ExternGrade}
 import org.openurp.edu.grade.model.CourseGrade
 import org.openurp.edu.program.model.{CoursePlan, PlanCourse, Program}
 
-import java.time.LocalDate
-
 trait ExemptionService {
+
+  def calcExemptScore(cg: CertificateGrade): Option[Float]
 
   def getSemester(program: Program, term: Option[Int]): Option[Semester]
 
@@ -39,7 +38,7 @@ trait ExemptionService {
 
   def removeExemption(eg: ExternGrade, course: Course): Unit
 
-  def addExemption(eg: ExternGrade, ecs: Iterable[Course]): Unit
+  def addExemption(eg: ExternGrade, ecs: Iterable[Course], score: Option[Float]): Unit
 
-  def addExemption(cg: CertificateGrade, ecs: Iterable[Course]): Unit
+  def addExemption(cg: CertificateGrade, ecs: Iterable[Course], score: Option[Float]): Unit
 }

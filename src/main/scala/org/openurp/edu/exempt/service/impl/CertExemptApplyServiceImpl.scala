@@ -25,6 +25,7 @@ import org.openurp.code.edu.model.ExamStatus
 import org.openurp.edu.exempt.model.CertExemptApply
 import org.openurp.edu.exempt.service.{CertExemptApplyService, ExemptionService}
 import org.openurp.edu.extern.model.CertificateGrade
+import org.openurp.edu.grade.model.Grade
 
 import java.time.Instant
 
@@ -39,7 +40,7 @@ class CertExemptApplyServiceImpl extends CertExemptApplyService {
   def accept(apply: CertExemptApply): Unit = {
     val grade = convert(apply)
     entityDao.saveOrUpdate(grade)
-    exemptionService.addExemption(grade, grade.exempts)
+    exemptionService.addExemption(grade, grade.exempts, exemptionService.calcExemptScore(grade))
     apply.status = AuditStatus.Passed
     entityDao.saveOrUpdate(apply)
   }
@@ -80,7 +81,7 @@ class CertExemptApplyServiceImpl extends CertExemptApplyService {
 
     grade.passed = true
     grade.certificateNo = apply.certificateNo
-    grade.status = 2
+    grade.status = Grade.Status.Published
     grade.examStatus = new ExamStatus(ExamStatus.Normal)
     grade.exempts ++= apply.courses
     grade.gradingMode = apply.gradingMode

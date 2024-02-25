@@ -17,16 +17,22 @@
 
 package org.openurp.edu.exempt.service.impl
 
+import org.apache.commons.jexl3.introspection.JexlPermissions
+import org.apache.commons.jexl3.scripting.JexlScriptEngine
 import org.beangle.commons.collection.Collections
+import org.beangle.commons.lang.Strings
+import org.beangle.commons.script.JSR223ExpressionEvaluator
 import org.beangle.data.dao.{EntityDao, OqlBuilder}
 import org.openurp.base.edu.model.Course
 import org.openurp.base.model.Semester
 import org.openurp.base.service.SemesterService
 import org.openurp.base.std.model.Student
 import org.openurp.code.edu.model.{CourseTakeType, CourseType}
+import org.openurp.edu.exempt.config.CertExemptSetting
 import org.openurp.edu.exempt.service.ExemptionService
 import org.openurp.edu.extern.model.{CertificateGrade, ExternGrade}
 import org.openurp.edu.grade.model.{CourseGrade, Grade}
+import org.openurp.edu.grade.service.GradeRateService
 import org.openurp.edu.program.domain.CoursePlanProvider
 import org.openurp.edu.program.model.{CoursePlan, PlanCourse, Program}
 
@@ -40,6 +46,39 @@ class ExemptionServiceImpl extends ExemptionService {
 
   var coursePlanProvider: CoursePlanProvider = _
 
+  var gradeRateService: GradeRateService = _
+
+  var evaluator = {
+    JexlScriptEngine.setPermissions(JexlPermissions.UNRESTRICTED)
+    JSR223ExpressionEvaluator("jexl3")
+  }
+
+  override def calcExemptScore(grade: CertificateGrade): Option[Float] = {
+    val q = OqlBuilder.from(classOf[CertExemptSetting], "setting")
+    q.where("setting.certificate=:certificate", grade.certificate)
+    q.where("setting.config.project=:project", grade.std.project)
+    entityDao.search(q).flatMap(_.scoreExpr).headOption match {
+      case None => None
+      case Some(expr) =>
+        if (Strings.isNotBlank(expr)) {
+          evaluator.eval(expr, Map("grade" -> grade)) match
+            case null => None
+            case v: Number => Some(v.floatValue())
+        } else None
+    }
+  }
+
+  def a(int: Int*):Unit={
+
+  }
+
+  def a(int: Long*)(implicit dummy: DummyImplicit): Unit = {
+
+  }
+
+  def a(int: String*)(implicit dummy: DummyImplicit): Unit = {
+
+  }
   override def getSemester(program: Program, term: Option[Int]): Option[Semester] = {
     term match {
       case Some(t) => semesterService.get(program.project, program.beginOn, program.endOn, t)
@@ -100,20 +139,20 @@ class ExemptionServiceImpl extends ExemptionService {
     entityDao.saveOrUpdate(cg)
   }
 
-  override def addExemption(eg: ExternGrade, courses: Iterable[Course]): Unit = {
+  override def addExemption(eg: ExternGrade, courses: Iterable[Course], score: Option[Float]): Unit = {
     val remark = eg.externStudent.school.name + " " + eg.courseName + " " + eg.scoreText
     val std = eg.externStudent.std
-    addCourseGrades(std, courses, s"${eg.id}@ExternGrade", Some(eg.acquiredOn), remark)
+    addCourseGrades(std, courses, s"${eg.id}@ExternGrade", Some(eg.acquiredOn), score, remark)
     val emptyCourses = eg.exempts filter (x => getExemptionGrades(std, x).isEmpty)
     eg.exempts.subtractAll(emptyCourses)
     eg.exempts ++= courses
     entityDao.saveOrUpdate(eg)
   }
 
-  override def addExemption(cg: CertificateGrade, courses: Iterable[Course]): Unit = {
+  override def addExemption(cg: CertificateGrade, courses: Iterable[Course], score: Option[Float]): Unit = {
     val remark = cg.certificate.name + " " + cg.scoreText
     val std = cg.std
-    addCourseGrades(std, courses, s"${cg.id}@CertificateGrade", None, remark)
+    addCourseGrades(std, courses, s"${cg.id}@CertificateGrade", None, score, remark)
     val emptyCourses = cg.exempts filter (x => getExemptionGrades(std, x).isEmpty)
     cg.exempts.subtractAll(emptyCourses)
     cg.exempts ++= courses
@@ -127,7 +166,7 @@ class ExemptionServiceImpl extends ExemptionService {
     entityDao.search(cgQuery)
   }
 
-  private def addCourseGrades(std: Student, courses: Iterable[Course], provider: String, acquireOn: Option[YearMonth], remark: String): Unit = {
+  private def addCourseGrades(std: Student, courses: Iterable[Course], provider: String, acquireOn: Option[YearMonth], score: Option[Float], remark: String): Unit = {
     //1. 删除过往认定过的，不属于目前该范围的成绩
     val cgQuery = OqlBuilder.from(classOf[CourseGrade], "cg")
     cgQuery.where("cg.std=:std and cg.courseTakeType.id=:exemptionTypeId", std, CourseTakeType.Exemption)
@@ -137,7 +176,7 @@ class ExemptionServiceImpl extends ExemptionService {
     entityDao.remove(exemptGrades.filter(x => !courseSet.contains(x.course)))
 
     //2. 重新建立成绩
-    val convertor = new CourseGradeConvertor(entityDao)
+    val convertor = new CourseGradeConvertor(entityDao, gradeRateService)
     val coursePlan = coursePlanProvider.getCoursePlan(std)
     courses foreach { c =>
       var semester: Semester = null
@@ -158,10 +197,10 @@ class ExemptionServiceImpl extends ExemptionService {
       if null == semester then semester = semesterService.get(std.project, LocalDate.now)
       if (null == courseType) courseType = c.courseType
 
-      val grade = convertor.convert(std, ExemptionCourse(c, courseType, semester), provider, remark)
+      val grade = convertor.convert(std, ExemptionCourse(c, courseType, semester, score), provider, remark)
       entityDao.saveOrUpdate(grade)
     }
   }
 }
 
-case class ExemptionCourse(course: Course, courseType: CourseType, semester: Semester)
+case class ExemptionCourse(course: Course, courseType: CourseType, semester: Semester, score: Option[Float])

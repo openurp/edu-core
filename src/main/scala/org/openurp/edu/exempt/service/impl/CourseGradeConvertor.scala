@@ -17,19 +17,18 @@
 
 package org.openurp.edu.exempt.service.impl
 
-import org.beangle.commons.lang.Numbers
 import org.beangle.data.dao.{EntityDao, OqlBuilder}
 import org.beangle.security.Securities
-import org.openurp.base.edu.model.Course
+import org.beangle.web.action.context.Params.converter
 import org.openurp.base.std.model.Student
 import org.openurp.code.edu.model.{CourseTakeType, GradeType, GradingMode}
 import org.openurp.edu.clazz.model.CourseTaker
-import org.openurp.edu.exempt.service.impl.ExemptionCourse
 import org.openurp.edu.grade.model.{CourseGrade, GaGrade, Grade}
+import org.openurp.edu.grade.service.GradeRateService
 
 import java.time.Instant
 
-class CourseGradeConvertor(entityDao: EntityDao) {
+class CourseGradeConvertor(entityDao: EntityDao, gradeRateService: GradeRateService) {
   private val courseTakeType = new CourseTakeType()
   courseTakeType.id = CourseTakeType.Exemption
   private val gaGradeType = entityDao.get(classOf[GradeType], GradeType.EndGa)
@@ -73,6 +72,15 @@ class CourseGradeConvertor(entityDao: EntityDao) {
     courseGrade.operator = Some(Securities.user)
     courseGrade.updatedAt = Instant.now
     courseGrade.provider = Some(provider)
+
+    val converter = gradeRateService.getConverter(courseGrade.project, courseGrade.gradingMode)
+    courseGrade.score = ec.score
+    courseGrade.scoreText = converter.convert(ec.score)
+    courseGrade.gp = None
+    ec.score foreach { s =>
+      courseGrade.gp = converter.calcGp(ec.score)
+    }
+
     courseGrade.remark = Some(remark)
     var gaGrade = courseGrade.getGaGrade(gaGradeType).orNull
     if (gaGrade == null) {
