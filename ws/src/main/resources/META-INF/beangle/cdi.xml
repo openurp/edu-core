@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<cdi>
+  <container>
+    <module class="org.beangle.ems.app.cas.DefaultModule"/>
+    <module class="org.openurp.edu.ws.schedule.DefaultModule"/>
+    <module class="org.openurp.edu.ws.clazz.DefaultModule"/>
+    <module class="org.openurp.edu.ws.DefaultModule"/>
+  </container>
+</cdi>
