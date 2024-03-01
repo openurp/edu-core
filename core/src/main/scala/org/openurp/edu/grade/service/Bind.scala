@@ -18,7 +18,7 @@
 package org.openurp.edu.grade.service
 
 import org.beangle.cdi.bind.BindModule
-import org.openurp.edu.grade.domain.{DefaultCourseGradeProvider, DefaultGpaPolicy, NumRounder}
+import org.openurp.edu.grade.domain.{DefaultCourseGradeProvider, DefaultGpaPolicy}
 import org.openurp.edu.grade.service.impl.*
 import org.openurp.edu.grade.service.{CourseGradePublishStack, GradingModeHelper}
 import org.openurp.edu.program.domain.DefaultAlternativeCourseProvider
@@ -69,7 +69,6 @@ class DefaultModule extends BindModule {
     bind("courseGradePublishStack", classOf[CourseGradePublishStack])
       .property("listeners", list(ref("recalcGpPublishListener"), ref("examTakerGeneratePublishListener")))
     bind(classOf[DefaultGradeTypePolicy])
-    bind("NumRounder.Normal", NumRounder.Normal)
     bind(classOf[TranscriptPlanCourseProvider], classOf[TranscriptGpaProvider], classOf[TranscriptPublishedGradeProvider],
       classOf[TranscriptStdGraduateProvider], classOf[SpringTranscriptDataProviderRegistry], classOf[TranscriptPublishedExternExamGradeProvider])
       .shortName()

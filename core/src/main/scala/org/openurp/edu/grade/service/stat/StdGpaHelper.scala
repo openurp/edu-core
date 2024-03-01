@@ -29,7 +29,7 @@ object StdGpaHelper {
     }
     for (stdGrade <- stdGradeList) {
       val stdGpa = new StdGpa(stdGrade.std)
-      stdGpa.gpa = gpaService.getGpa(stdGrade.std, stdGrade.grades)
+      stdGpa.gpa = gpaService.getGpa(stdGrade.std, stdGrade.grades).doubleValue
       stdGrade.stdGpa = stdGpa
     }
   }

@@ -36,28 +36,28 @@ trait GpaService {
    * @param std
    * @return
    */
-  def getGpa(std: Student): Float
+  def getGpa(std: Student): BigDecimal
 
   /**
    * 统计学生的平均绩点<br>
-   * 平均绩点为： gpa=(∑(绩点*学分))/∑(学分) 平均绩点以截断的方式保留后面两位
+   * 平均绩点为： gpa=(∑(绩点*学分))/∑(学分) 平均绩点保留尽可能的精确度
    *
    * @param std
    * @param grades
    *          可以为null
    * @return
    */
-  def getGpa(std: Student, grades: collection.Iterable[CourseGrade]): Float
+  def getGpa(std: Student, grades: collection.Iterable[CourseGrade]): BigDecimal
 
   /**
    * 统计学生的平均绩点<br>
    * 除"学生"之外的其他参数均为可选参数。<br>
-   * 平均绩点为： gpa=(∑(绩点*学分))/∑(学分) 平均绩点以截断的方式保留后面两位
+   * 平均绩点为： gpa=(∑(绩点*学分))/∑(学分) 平均绩点保留尽可能的精确度
    *
    * @param std
    * @param semester
    *          可以为null
    * @return
    */
-  def getGpa(std: Student, semester: Semester): Float
+  def getGpa(std: Student, semester: Semester): BigDecimal
 }

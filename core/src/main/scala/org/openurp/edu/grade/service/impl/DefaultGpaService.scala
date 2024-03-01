@@ -29,15 +29,15 @@ class DefaultGpaService extends GpaService {
 
   var courseGradeProvider: CourseGradeProvider = _
 
-  def getGpa(std: Student): Float = {
+  def getGpa(std: Student): BigDecimal = {
     gpaPolicy.calcGpa(courseGradeProvider.getPublished(std))
   }
 
-  def getGpa(std: Student, grades: collection.Iterable[CourseGrade]): Float = {
+  def getGpa(std: Student, grades: collection.Iterable[CourseGrade]): BigDecimal = {
     gpaPolicy.calcGpa(grades)
   }
 
-  def getGpa(std: Student, semester: Semester): Float = {
+  def getGpa(std: Student, semester: Semester): BigDecimal = {
     gpaPolicy.calcGpa(courseGradeProvider.getPublished(std, List(semester)))
   }
 

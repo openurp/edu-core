@@ -21,7 +21,7 @@ import org.beangle.data.dao.EntityDao
 import org.openurp.base.service.ProjectConfigService
 import org.openurp.base.std.model.Student
 import org.openurp.code.edu.model.{CourseTakeType, ExamStatus, GradeType, GradingMode}
-import org.openurp.edu.grade.domain.NumRounder
+import org.openurp.edu.grade.domain.Numbers
 import org.openurp.edu.grade.model.*
 import org.openurp.edu.grade.service.{CourseGradeCalculator, CourseGradeSetting, CourseGradeSettings, GradeRateService}
 import org.openurp.edu.service.Features
@@ -57,8 +57,6 @@ class DefaultCourseGradeCalculator extends CourseGradeCalculator {
   var minEndScore: Float = 0
 
   var endIsGaWhenFreeListening: Boolean = true
-
-  var numRounder: NumRounder = NumRounder.Normal
 
   def calcFinal(grade: CourseGrade): Unit = {
     if (!grade.published) grade.status = guessFinalStatus(grade)
@@ -362,7 +360,7 @@ class DefaultCourseGradeCalculator extends CourseGradeCalculator {
   }
 
   protected def reserve(score: Float, state: CourseGradeState): Float = {
-    this.numRounder.round(score, if null == state then 0 else state.scorePrecision)
+    Numbers.round(score.toDouble, if null == state then 0 else state.scorePrecision).toFloat
   }
 
 }
