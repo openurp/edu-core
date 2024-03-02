@@ -17,15 +17,15 @@
 
 package org.openurp.edu.grade.service.impl
 
+import org.beangle.commons.bean.DefaultPropertyExtractor
 import org.beangle.commons.collection.Collections
-import org.beangle.data.transfer.exporter.DefaultPropertyExtractor
 import org.openurp.base.hr.model.Teacher
 import org.openurp.edu.clazz.model.Clazz
 import org.openurp.edu.grade.model.CourseGradeState
 
 class GradeStatExtractor extends DefaultPropertyExtractor {
 
-  override def getPropertyValue(target: Object, property: String): Any = {
+  override def get(target: Object, property: String): Any = {
     if ("teachers" == property) {
       var teachers = Collections.newBuffer[Teacher]
       if (target.isInstanceOf[Clazz]) {
@@ -37,7 +37,7 @@ class GradeStatExtractor extends DefaultPropertyExtractor {
       }
       if teachers.isEmpty then "未安排教师" else teachers.map(_.name).mkString(",")
     } else {
-      super.getPropertyValue(target, property)
+      super.get(target, property)
     }
   }
 }

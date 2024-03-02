@@ -17,11 +17,11 @@
 
 package org.openurp.edu.grade.service.impl
 
+import org.beangle.commons.lang.Numbers
 import org.beangle.data.dao.EntityDao
 import org.openurp.base.service.ProjectConfigService
 import org.openurp.base.std.model.Student
 import org.openurp.code.edu.model.{CourseTakeType, ExamStatus, GradeType, GradingMode}
-import org.openurp.edu.grade.domain.Numbers
 import org.openurp.edu.grade.model.*
 import org.openurp.edu.grade.service.{CourseGradeCalculator, CourseGradeSetting, CourseGradeSettings, GradeRateService}
 import org.openurp.edu.service.Features
