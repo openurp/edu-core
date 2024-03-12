@@ -17,7 +17,7 @@
 
 package org.openurp.edu.ws.schedule
 
-import org.beangle.commons.collection.{Collections, Properties}
+import org.beangle.commons.collection.Properties
 import org.beangle.commons.lang.Dates
 import org.beangle.data.dao.{EntityDao, OqlBuilder}
 import org.beangle.web.action.annotation.{mapping, param, response}
@@ -26,8 +26,6 @@ import org.openurp.base.service.SemesterService
 import org.openurp.base.std.model.Student
 import org.openurp.edu.clazz.model.CourseTaker
 import org.openurp.edu.schedule.service.LessonSchedule
-
-import java.time.LocalTime
 
 class StudentWS extends ActionSupport {
 
@@ -48,6 +46,7 @@ class StudentWS extends ActionSupport {
         val takerQuery = OqlBuilder.from(classOf[CourseTaker], "ct")
         takerQuery.where("ct.std=:std and ct.semester=:semester", std, semester)
         val takers = entityDao.search(takerQuery)
+
         val activities = takers.flatMap(_.clazz.schedule.activities)
         val schedules = LessonSchedule.convert(activities, bAt, eAt)
         val properties = schedules.sorted map { schedule =>

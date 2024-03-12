@@ -28,8 +28,8 @@ object LessonSchedule {
   def convert(activities: Iterable[ClazzActivity], beginAt: LocalDateTime, endAt: LocalDateTime): collection.Seq[LessonSchedule] = {
     val schedules = Collections.newBuffer[LessonSchedule]
     activities.foreach { activity =>
-      val beginTime = LocalTime.of(activity.time.beginAt.hour, activity.time.beginAt.minute)
-      val endTime = LocalTime.of(activity.time.endAt.hour, activity.time.endAt.minute)
+      val beginTime = activity.time.beginAt.toLocalTime
+      val endTime = activity.time.endAt.toLocalTime
       activity.time.dates foreach { date =>
         val s1 = date.atTime(beginTime)
         val e2 = date.atTime(endTime)
@@ -51,10 +51,12 @@ object LessonSchedule {
     val clazz = ca.clazz
     task.id = clazz.id.toString
     val t = clazz.semester
-    task.semester = Properties("code" -> t.code, "id" -> t.id.toString, "schoolYear" -> t.schoolYear, "name" -> t.name)
-    task.subject = Properties("code" -> clazz.course.code, "name" -> clazz.course.name)
-    task.people = ca.teachers.map { x => Properties("code" -> x.code, "name" -> x.name) }.toSeq
+    task.semester = Properties("id" -> t.id.toString, "code" -> t.code, "schoolYear" -> t.schoolYear, "name" -> t.name)
+    task.subject = Properties("id" -> clazz.course.id.toString, "code" -> clazz.course.code, "name" -> clazz.course.name)
+    task.people = ca.teachers.map { x => Properties("id" -> x.id.toString, "code" -> x.code, "name" -> x.name) }.toSeq
     task.crn = clazz.crn
+    s.units = s"${ca.beginUnit}-${ca.endUnit}"
+    s.room = ca.rooms.map(_.name).mkString(",")
     s.task = task
     s
   }
@@ -64,6 +66,8 @@ class LessonSchedule extends LongId, Ordered[LessonSchedule] {
   var task: ClazzTask = _
   var date: LocalDate = _
   var time: String = _
+  var units: String = _
+  var room: String = _
 
   override def compare(that: LessonSchedule): Int = {
     this.orderKey.compareTo(that.orderKey)
