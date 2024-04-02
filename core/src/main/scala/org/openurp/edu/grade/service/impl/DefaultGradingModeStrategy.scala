@@ -44,12 +44,7 @@ class DefaultGradingModeStrategy extends GradingModeStrategy {
   }
 
   protected def getDefaultCourseGradeGradingMode(state: CourseGradeState): GradingMode = {
-    val modes = state.clazz.course.gradingModes
-    if (modes.isEmpty) {
-      entityDao.get(classOf[GradingMode], GradingMode.Percent)
-    } else {
-      modes.head
-    }
+    state.clazz.course.gradingMode
   }
 
   protected def getDefaultExamGradeGradingMode(gradeState: CourseGradeState, typeState: GradeState): GradingMode = {

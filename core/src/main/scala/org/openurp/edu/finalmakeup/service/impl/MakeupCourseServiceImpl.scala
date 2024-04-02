@@ -24,7 +24,7 @@ import org.openurp.base.model.{Department, Semester}
 import org.openurp.base.std.model.{Squad, Student}
 import org.openurp.edu.exam.model.{FinalMakeupCourse, FinalMakeupTaker}
 import org.openurp.edu.finalmakeup.service.{MakeupCourseCrnGenerator, MakeupCourseService}
-import org.openurp.edu.grade.model.CourseAuditResult
+import org.openurp.edu.grade.model.AuditCourseResult
 
 /** 毕业补考服务
  *
@@ -73,8 +73,8 @@ class MakeupCourseServiceImpl extends MakeupCourseService {
     }
   }
 
-  private def getCourseResult(std: Student, course: Course): Option[CourseAuditResult] = {
-    val builder = OqlBuilder.from(classOf[CourseAuditResult], "courseResult")
+  private def getCourseResult(std: Student, course: Course): Option[AuditCourseResult] = {
+    val builder = OqlBuilder.from(classOf[AuditCourseResult], "courseResult")
     builder.where("courseResult.course=:course", course)
     builder.where("courseResult.groupResult.planResult.std=:std", std)
     entityDao.search(builder).headOption
@@ -88,7 +88,7 @@ class MakeupCourseServiceImpl extends MakeupCourseService {
     entityDao.search(query).headOption
   }
 
-  private def doAddTaker(makeupCourse: FinalMakeupCourse, std: Student, result: Option[CourseAuditResult]): String = {
+  private def doAddTaker(makeupCourse: FinalMakeupCourse, std: Student, result: Option[AuditCourseResult]): String = {
     result foreach { r =>
       val courseType = r.groupResult.courseType
       val take = new FinalMakeupTaker(makeupCourse, std, courseType)

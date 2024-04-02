@@ -17,7 +17,7 @@
 
 package org.openurp.edu.schedule.service
 
-import org.beangle.commons.bean.orderings.MultiPropertyOrdering
+import org.beangle.commons.bean.orderings.PropertyOrdering
 import org.beangle.commons.collection.Collections
 import org.beangle.commons.lang.Strings
 import org.beangle.commons.lang.time.{WeekState, WeekTime, Weeks}
@@ -158,7 +158,7 @@ object ScheduleDigestor {
       if (format.indexOf(ScheduleDigestor.multiTeacher) != -1 && teachers.isEmpty) addTeacher = false
     }
     val CourseArrangeBuf = new StringBuffer
-    mergedActivities = mergedActivities.sorted(new MultiPropertyOrdering("clazz.course.code,time.startOn"))
+    mergedActivities = mergedActivities.sorted(PropertyOrdering.by("clazz.course.code,time.startOn"))
     // 合并后的教学活动
     for (activity <- mergedActivities) {
       CourseArrangeBuf.append(format)
@@ -213,7 +213,7 @@ object ScheduleDigestor {
           roomStr.append(room.name)
           if (it.hasNext) roomStr.append(",")
         }
-        if (roomStr.isEmpty && activity.places.nonEmpty) roomStr.append(activity.places.get)
+        if (roomStr.isEmpty && activity.remark.nonEmpty) roomStr.append(activity.remark.get)
         CourseArrangeBuf.replace(replaceStart, replaceStart + ScheduleDigestor.room.length, roomStr.toString)
         replaceStart = CourseArrangeBuf.indexOf(ScheduleDigestor.building)
         if (-1 != replaceStart) {

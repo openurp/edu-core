@@ -64,7 +64,7 @@ class CourseGradeConvertor(entityDao: EntityDao, gradeRateService: GradeRateServ
       entityDao.saveOrUpdate(taker)
     }
     courseGrade.courseTakeType = courseTakeType
-    courseGrade.gradingMode = ec.course.gradingModes.headOption.getOrElse(new GradingMode(GradingMode.Percent))
+    courseGrade.gradingMode = ec.course.gradingMode
     courseGrade.freeListening = true
     courseGrade.passed = true
     courseGrade.status = Grade.Status.Published

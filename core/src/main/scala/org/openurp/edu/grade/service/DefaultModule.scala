@@ -20,26 +20,7 @@ package org.openurp.edu.grade.service
 import org.beangle.cdi.bind.BindModule
 import org.openurp.edu.grade.domain.{DefaultCourseGradeProvider, DefaultGpaPolicy}
 import org.openurp.edu.grade.service.impl.*
-import org.openurp.edu.grade.service.{CourseGradePublishStack, GradingModeHelper}
 import org.openurp.edu.program.domain.DefaultAlternativeCourseProvider
-
-class AuditBindModule extends BindModule {
-
-  protected override def binding(): Unit = {
-    bind("planAuditCourseSubstitutionListener", classOf[PlanAuditCourseSubstitutionListener])
-    bind("planAuditCourseTakerListener", classOf[PlanAuditCourseTakerListener])
-    bind("planAuditCourseTypeMatchListener", classOf[PlanAuditCourseTypeMatchListener])
-    bind("planAuditCommonElectiveListener", classOf[PlanAuditCommonElectiveListener])
-  }
-}
-
-class ConfigModule extends BindModule {
-
-  protected override def binding(): Unit = {
-    bind(classOf[TranscriptTemplateServiceImpl])
-    bind("gradeRateService", classOf[GradeRateServiceImpl])
-  }
-}
 
 class DefaultModule extends BindModule {
 

@@ -15,15 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openurp.edu.grade.service.impl
+package org.openurp.edu.grade.service.audit
 
 import org.beangle.commons.collection.Collections
 import org.beangle.commons.logging.Logging
 import org.beangle.data.dao.{EntityDao, OqlBuilder}
 import org.openurp.base.edu.model.Course
 import org.openurp.base.std.model.Student
-import org.openurp.edu.grade.domain.GroupResultAdapter
-import org.openurp.edu.grade.model.{CourseAuditResult, GroupAuditResult, PlanAuditResult}
+import org.openurp.edu.grade.model.{AuditCourseResult, AuditGroupResult, AuditPlanResult}
 
 import java.time.Instant
 
@@ -31,32 +30,21 @@ import java.time.Instant
  * 计划审核保存
  *
  */
-object PlanAuditPersister extends Logging {
+object AuditPlanPersister extends Logging {
 
-  def save(newResult: PlanAuditResult, entityDao: EntityDao): Unit = {
+  def save(newResult: AuditPlanResult, entityDao: EntityDao): Unit = {
     var existedResult = result(newResult.std, entityDao).orNull
-    if (null != existedResult) {
+    if (null != existedResult && !existedResult.archived) {
       existedResult.remark = newResult.remark
       existedResult.updatedAt = Instant.now
-      val existedCreditsCompleted = existedResult.auditStat.passedCredits
-      existedResult.auditStat = newResult.auditStat
-      var updatePassed = true
-      val existedPassed = existedResult.passed
-      if (!existedResult.archived) {
-        updatePassed = false
-        if (existedResult.passed &&
-          newResult.auditStat.passedCredits < existedCreditsCompleted) {
-          updatePassed = true
-        }
-      }
+      existedResult.owedCredits = newResult.owedCredits
+      existedResult.owedCredits2 = newResult.owedCredits2
+      existedResult.owedCredits3 = newResult.owedCredits3
+      existedResult.passed = newResult.passed
+      existedResult.predicted = newResult.predicted
       val updates = new StringBuilder()
-      mergeGroupResult(existedResult, new GroupResultAdapter(existedResult), new GroupResultAdapter(newResult),
-        updates)
-      if (!updatePassed) {
-        existedResult.passed = existedPassed
-      } else {
-        existedResult.passed = newResult.passed
-      }
+
+      mergePlanResult(existedResult, newResult, updates)
       // delete last ';'
       if (updates.nonEmpty) updates.deleteCharAt(updates.length - 1)
       existedResult.updates = Some(updates.toString)
@@ -66,35 +54,64 @@ object PlanAuditPersister extends Logging {
     entityDao.saveOrUpdate(existedResult)
   }
 
-  private def result(std: Student, entityDao: EntityDao): Option[PlanAuditResult] = {
-    val query = OqlBuilder.from(classOf[PlanAuditResult], "planResult")
+  private def result(std: Student, entityDao: EntityDao): Option[AuditPlanResult] = {
+    val query = OqlBuilder.from(classOf[AuditPlanResult], "planResult")
     query.where("planResult.std = :std", std)
     entityDao.search(query).headOption
   }
 
-  private def mergeGroupResult(existedResult: PlanAuditResult,
-                               target: GroupAuditResult,
-                               source: GroupAuditResult,
-                               updates: StringBuilder): Unit = {
+  private def mergePlanResult(target: AuditPlanResult, source: AuditPlanResult, updates: StringBuilder): Unit = {
+    // 收集课程组[groupName->groupResult]
+    val tarGroupResults = Collections.newMap[String, AuditGroupResult]
+    val sourceGroupResults = Collections.newMap[String, AuditGroupResult]
+    val tarTops = target.topGroupResults
+    val srcTops = source.topGroupResults
+    for (result <- tarTops) tarGroupResults.put(result.name, result)
+    for (result <- srcTops) sourceGroupResults.put(result.name, result)
+
+    // 删除没有的课程组
+    val removed = Collections.subtract(tarGroupResults.keySet, sourceGroupResults.keySet)
+    for (groupName <- removed) {
+      tarGroupResults(groupName).detach()
+    }
+    // 添加课程组
+    val added = Collections.subtract(sourceGroupResults.keySet, tarGroupResults.keySet)
+    for (groupName <- added) {
+      sourceGroupResults(groupName).attachTo(target)
+    }
+    // 合并课程组
+    val common = Collections.intersection(sourceGroupResults.keySet, tarGroupResults.keySet)
+    for (groupName <- common) {
+      mergeGroupResult(target, tarGroupResults(groupName), sourceGroupResults(groupName), updates)
+    }
+  }
+
+  private def mergeGroupResult(existedResult: AuditPlanResult, target: AuditGroupResult, source: AuditGroupResult, updates: StringBuilder): Unit = {
     // 统计完成学分的变化
-    val delta = source.auditStat.passedCredits - target.auditStat.passedCredits
+    val delta = source.passedCredits - target.passedCredits
     if (java.lang.Float.compare(delta, 0) != 0) {
       updates.append(source.name)
       if (delta > 0) updates.append('+').append(delta) else updates.append(delta)
       updates.append(';')
     }
-    target.auditStat = source.auditStat
-    target.passed = source.passed
     target.indexno = source.indexno
+    target.requiredCredits = source.requiredCredits
+    target.subCount = source.subCount
+
+    target.passed = source.passed
+    target.passedCredits = source.passedCredits
+    target.owedCredits = source.owedCredits
+    target.owedCredits2 = source.owedCredits2
+    target.owedCredits3 = source.owedCredits3
     // 收集课程组[groupName->groupResult]
-    val tarGroupResults = Collections.newMap[String, GroupAuditResult]
-    val sourceGroupResults = Collections.newMap[String, GroupAuditResult]
+    val tarGroupResults = Collections.newMap[String, AuditGroupResult]
+    val sourceGroupResults = Collections.newMap[String, AuditGroupResult]
     for (result <- target.children) tarGroupResults.put(result.name, result)
     for (result <- source.children) sourceGroupResults.put(result.name, result)
 
     // 收集课程结果[course->courseResult]
-    val tarCourseResults = Collections.newMap[Course, CourseAuditResult]
-    val sourceCourseResults = Collections.newMap[Course, CourseAuditResult]
+    val tarCourseResults = Collections.newMap[Course, AuditCourseResult]
+    val sourceCourseResults = Collections.newMap[Course, AuditCourseResult]
     for (courseResult <- target.courseResults) tarCourseResults.put(courseResult.course, courseResult)
     for (courseResult <- source.courseResults) sourceCourseResults.put(courseResult.course, courseResult)
 
@@ -108,7 +125,7 @@ object PlanAuditPersister extends Logging {
     // 添加课程组
     val added = Collections.subtract(sourceGroupResults.keySet, tarGroupResults.keySet)
     for (groupName <- added) {
-      val groupResult = sourceGroupResults.get(groupName).asInstanceOf[GroupAuditResult]
+      val groupResult = sourceGroupResults(groupName)
       target.addChild(groupResult)
       groupResult.attachTo(existedResult)
     }
@@ -136,12 +153,16 @@ object PlanAuditPersister extends Logging {
     // 合并共同的课程
     val commonCourses = Collections.intersection(sourceCourseResults.keySet, tarCourseResults.keySet)
     for (course <- commonCourses) {
-      val targetCourseResult = tarCourseResults(course)
-      val sourceCourseResult = sourceCourseResults(course)
-      targetCourseResult.passed = sourceCourseResult.passed
-      targetCourseResult.scores = sourceCourseResult.scores
-      targetCourseResult.compulsory = sourceCourseResult.compulsory
-      targetCourseResult.remark = sourceCourseResult.remark
+      val tar = tarCourseResults(course)
+      val src = sourceCourseResults(course)
+      tar.passed = src.passed
+      tar.scores = src.scores
+      tar.compulsory = src.compulsory
+      tar.hasGrade = src.hasGrade
+      tar.predicted = src.predicted
+      tar.taking = src.taking
+      tar.passedWay = src.passedWay
+      tar.remark = src.remark
     }
   }
 }

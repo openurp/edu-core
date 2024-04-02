@@ -18,11 +18,11 @@
 package org.openurp.edu.grade.service
 
 import org.openurp.base.std.model.Student
-import org.openurp.edu.grade.model.PlanAuditResult
+import org.openurp.edu.grade.model.AuditPlanResult
 
-trait PlanAuditService {
+trait AuditPlanService {
 
-  def audit(std: Student, params: collection.Map[String, Any], persist: Boolean = false): PlanAuditResult
+  def audit(std: Student, params: collection.Map[String, Any], persist: Boolean = false): AuditPlanResult
 
   /**
    * 获得学生的计划完成审核结果<br>
@@ -31,7 +31,7 @@ trait PlanAuditService {
    * @param std
    * @return
    */
-  def getResult(std: Student): Option[PlanAuditResult]
+  def getResult(std: Student): Option[AuditPlanResult]
 
   /** 批量审核 */
   def batchAudit(stds: Iterable[Student], params: collection.Map[String, Any]): Unit
