@@ -22,8 +22,8 @@ ThisBuild / developers := List(
 ThisBuild / description := "OpenURP Edu Core Library"
 ThisBuild / homepage := Some(url("http://openurp.github.io/edu-core/index.html"))
 
-val apiVer = "0.37.4-SNAPSHOT"
-val starterVer = "0.3.28-SNAPSHOT"
+val apiVer = "0.38.0"
+val starterVer = "0.3.30"
 
 val openurp_edu_api = "org.openurp.edu" % "openurp-edu-api" % apiVer
 val openurp_std_api = "org.openurp.std" % "openurp-std-api" % apiVer
@@ -40,7 +40,7 @@ lazy val core = (project in file("core"))
     common,
     libraryDependencies ++= Seq(openurp_edu_api,openurp_std_api),
     libraryDependencies ++= Seq(beangle_ems_app),
-    libraryDependencies ++= Seq(beangle_data_transfer, beangle_cdi_spring, beangle_security_core, gson)
+    libraryDependencies ++= Seq(beangle_doc_transfer, beangle_cdi, beangle_security, gson)
   )
 
 lazy val ws = (project in file("ws"))
@@ -51,7 +51,7 @@ lazy val ws = (project in file("ws"))
     common,
     libraryDependencies ++= Seq(openurp_edu_api,openurp_std_api),
     libraryDependencies ++= Seq(beangle_ems_app,openurp_stater_ws),
-    libraryDependencies ++= Seq(beangle_data_transfer, beangle_cdi_spring, beangle_security_core, gson)
+    libraryDependencies ++= Seq(spring_tx,spring_jdbc)
   ).dependsOn(core)
 
 publish / skip := true
