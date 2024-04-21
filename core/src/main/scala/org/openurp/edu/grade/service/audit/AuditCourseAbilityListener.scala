@@ -67,7 +67,7 @@ class AuditCourseAbilityListener extends AuditPlanListener {
               groupResult
             case Some(gr) =>
               val required = g.planCourses.map(pc => if pc.compulsory then pc.course.getCredits(std.level) else 0).sum
-              if (required > gr.requiredCredits) gr.requiredCredits = required
+              if (required < gr.requiredCredits) gr.requiredCredits = required
               gr
           }
           g.planCourses foreach { pc =>

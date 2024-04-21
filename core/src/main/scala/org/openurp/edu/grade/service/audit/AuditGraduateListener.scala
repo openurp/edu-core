@@ -19,7 +19,6 @@ package org.openurp.edu.grade.service.audit
 
 import org.beangle.commons.lang.time.Weeks
 import org.beangle.data.dao.EntityDao
-import org.openurp.base.edu.model.Terms
 import org.openurp.base.service.SemesterService
 import org.openurp.edu.grade.domain.{AuditPlanContext, AuditPlanListener}
 
@@ -33,6 +32,9 @@ class AuditGraduateListener extends AuditPlanListener {
 
   var semesterService: SemesterService = _
 
+  var courseNames = Set("毕业实习", "毕业论文", "形势与政策", "社会调查与公益劳动", "专业见习", "学科竞赛、创新项目、模拟法庭等"
+    , "模拟法庭等实践教学", "学年论文", "模拟法庭等实践教学", "军训")
+
   override def end(context: AuditPlanContext): Unit = {
     if (context.result.passed) return
 
@@ -44,12 +46,9 @@ class AuditGraduateListener extends AuditPlanListener {
 
     if (!context.result.passed && isGraduate) {
       val plan = context.coursePlan
-      //太短的学期不要看了，6~8学期以上在考虑最后两个学期作为毕业学年
-      val terms = if plan.terms > 4 then Terms(s"${plan.terms - 1}-${plan.terms}") else Terms.empty
-
       for (groupResult <- context.result.groupResults) {
         for (car <- groupResult.courseResults) {
-          if (!car.passed && (car.terms.matches(terms) || car.course.name.contains("毕业"))) {
+          if (!car.passed && (courseNames.contains(car.course.name) || car.course.name.startsWith("毕业论文"))) {
             car.predicted = true
             car.addRemark("毕业学年课程")
             groupResult.addCourseResult(car)

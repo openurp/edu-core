@@ -18,11 +18,10 @@
 package org.openurp.edu.grade.service
 
 import org.beangle.commons.collection.Collections
-import org.beangle.data.dao.EntityDao
 import org.beangle.commons.lang.Numbers
+import org.beangle.data.dao.EntityDao
 import org.openurp.code.edu.model.GradingMode
 import org.openurp.edu.grade.config.GradeRateConfig
-import org.openurp.edu.grade.config.GradeRateItem
 
 class GradingModeHelper {
 
@@ -38,8 +37,10 @@ class GradingModeHelper {
     val configs = entityDao.getAll(classOf[GradeRateConfig])
     for (config <- configs if !config.gradingMode.numerical) {
       val items = config.items
-      for (item <- items if null != item.grade) {
-        gradeStyles.put(item.grade, config.gradingMode)
+      for (item <- items) {
+        item.grade foreach { g =>
+          gradeStyles.put(g, config.gradingMode)
+        }
       }
     }
     val mss = entityDao.getAll(classOf[GradingMode])
@@ -57,7 +58,7 @@ class GradingModeHelper {
 
   def styleForScore(score: String): GradingMode = {
     gradeStyles.get(score) match {
-      case None    => if (Numbers.isDigits(score)) defaultGradingMode else null
+      case None => if (Numbers.isDigits(score)) defaultGradingMode else null
       case Some(s) => s
     }
   }

@@ -17,11 +17,17 @@
 
 package org.openurp.edu.grade.service.audit
 
+import org.beangle.commons.collection.Collections
+import org.beangle.commons.lang.time.Weeks
 import org.beangle.data.dao.{EntityDao, OqlBuilder}
+import org.openurp.base.edu.model.Course
+import org.openurp.base.model.Semester
 import org.openurp.code.edu.model.{ExamType, GradeType}
 import org.openurp.edu.exam.model.ExamTaker
 import org.openurp.edu.grade.domain.{AuditPlanContext, AuditPlanListener}
 import org.openurp.edu.grade.model.*
+
+import java.time.LocalDate
 
 class AuditExamTakerListener extends AuditPlanListener {
 
@@ -39,11 +45,17 @@ class AuditExamTakerListener extends AuditPlanListener {
     val examTakers = entityDao.search(builder)
 
     if (examTakers.nonEmpty) {
-      val examCourses = examTakers.map(_.clazz.course).distinct
+      val today = LocalDate.now
+      //半年以内的未出成绩的补缓考
+      val examCourses = Collections.newMap[Course, Semester]
+      examTakers.filter(x => Math.abs(Weeks.between(x.semester.endOn, today)) <= 25) foreach { taker =>
+        examCourses.getOrElseUpdate(taker.clazz.course, taker.semester)
+      }
       for (groupResult <- context.result.groupResults) {
         for (car <- groupResult.courseResults) {
-          if (!car.passed && examCourses.contains(car.course)) {
-            car.addRemark("未出补缓考成绩")
+          if (!car.passed && examCourses.keySet.contains(car.course)) {
+            val semester = examCourses(car.course)
+            car.addRemark(s"未出补缓考成绩(${semester.schoolYear}学年${semester.name}学期)")
             car.taking = true
             groupResult.addCourseResult(car)
           }

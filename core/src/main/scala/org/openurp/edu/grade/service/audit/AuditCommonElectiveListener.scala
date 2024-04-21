@@ -34,13 +34,16 @@ class AuditCommonElectiveListener extends AuditPlanListener {
       result.getGroupResult(electiveType.name) foreach { gr =>
         gr.indexno = "99.99" //尽量放到最后
         for (course <- stdGrade.restCourses) {
-          val cr = gr.getCourseResult(course).getOrElse(new AuditCourseResult(course))
           val grades = stdGrade.useGrade(course)
-          grades foreach { grade =>
-            if (grade.courseType.id != electiveType.id) cr.addRemark("原" + grade.courseType.name)
+          val credits = course.getCredits(result.std.level)
+          if (credits > 0) {
+            val cr = gr.getCourseResult(course).getOrElse(new AuditCourseResult(course))
+            grades foreach { grade =>
+              if (grade.courseType.id != electiveType.id) cr.addRemark("原" + grade.courseType.name)
+            }
+            cr.updatePassed(grades)
+            gr.addCourseResult(cr)
           }
-          cr.updatePassed(grades)
-          gr.addCourseResult(cr)
         }
       }
     }

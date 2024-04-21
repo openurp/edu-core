@@ -19,9 +19,7 @@ package org.openurp.edu.grade.service.audit
 
 import org.beangle.commons.collection.Collections
 import org.beangle.commons.logging.Logging
-import org.beangle.data.dao.{EntityDao, OqlBuilder}
 import org.openurp.base.edu.model.Course
-import org.openurp.base.std.model.Student
 import org.openurp.edu.grade.model.{AuditCourseResult, AuditGroupResult, AuditPlanResult}
 
 import java.time.Instant
@@ -30,34 +28,26 @@ import java.time.Instant
  * 计划审核保存
  *
  */
-object AuditPlanPersister extends Logging {
+object AuditPlanMerger extends Logging {
 
-  def save(newResult: AuditPlanResult, entityDao: EntityDao): Unit = {
-    var existedResult = result(newResult.std, entityDao).orNull
-    if (null != existedResult && !existedResult.archived) {
-      existedResult.remark = newResult.remark
-      existedResult.updatedAt = Instant.now
-      existedResult.owedCredits = newResult.owedCredits
-      existedResult.owedCredits2 = newResult.owedCredits2
-      existedResult.owedCredits3 = newResult.owedCredits3
-      existedResult.passed = newResult.passed
-      existedResult.predicted = newResult.predicted
-      val updates = new StringBuilder()
-
-      mergePlanResult(existedResult, newResult, updates)
-      // delete last ';'
-      if (updates.nonEmpty) updates.deleteCharAt(updates.length - 1)
-      existedResult.updates = Some(updates.toString)
-    } else {
-      existedResult = newResult
+  def merge(newResult: AuditPlanResult, existedResult: AuditPlanResult): AuditPlanResult = {
+    if (existedResult.archived) {
+      throw new RuntimeException(s"Cannot merge into a archived audit plan results ${existedResult.id}")
     }
-    entityDao.saveOrUpdate(existedResult)
-  }
+    existedResult.remark = newResult.remark
+    existedResult.updatedAt = Instant.now
+    existedResult.owedCredits = newResult.owedCredits
+    existedResult.owedCredits2 = newResult.owedCredits2
+    existedResult.owedCredits3 = newResult.owedCredits3
+    existedResult.passed = newResult.passed
+    existedResult.predicted = newResult.predicted
+    val updates = new StringBuilder()
 
-  private def result(std: Student, entityDao: EntityDao): Option[AuditPlanResult] = {
-    val query = OqlBuilder.from(classOf[AuditPlanResult], "planResult")
-    query.where("planResult.std = :std", std)
-    entityDao.search(query).headOption
+    mergePlanResult(existedResult, newResult, updates)
+    // delete last ';'
+    if (updates.nonEmpty) updates.deleteCharAt(updates.length - 1)
+    existedResult.updates = Some(updates.toString)
+    existedResult
   }
 
   private def mergePlanResult(target: AuditPlanResult, source: AuditPlanResult, updates: StringBuilder): Unit = {
@@ -67,6 +57,15 @@ object AuditPlanPersister extends Logging {
     val tarTops = target.topGroupResults
     val srcTops = source.topGroupResults
     for (result <- tarTops) tarGroupResults.put(result.name, result)
+    //删除原有计划内相同名称重复组
+    for (result <- tarTops) {
+      if (!tarGroupResults.get(result.name).contains(result)) {
+        result.parent foreach { p =>
+          p.removeChild(result)
+        }
+        target.removeGroupResult(result)
+      }
+    }
     for (result <- srcTops) sourceGroupResults.put(result.name, result)
 
     // 删除没有的课程组
@@ -99,6 +98,7 @@ object AuditPlanPersister extends Logging {
     target.subCount = source.subCount
 
     target.passed = source.passed
+    target.convertedCredits = source.convertedCredits
     target.passedCredits = source.passedCredits
     target.owedCredits = source.owedCredits
     target.owedCredits2 = source.owedCredits2

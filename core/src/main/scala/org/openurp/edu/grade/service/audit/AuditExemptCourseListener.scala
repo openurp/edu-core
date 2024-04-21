@@ -20,31 +20,50 @@ package org.openurp.edu.grade.service.audit
 import org.beangle.commons.collection.Collections
 import org.beangle.data.dao.{EntityDao, OqlBuilder}
 import org.openurp.base.edu.model.Course
+import org.openurp.code.edu.model.CourseType
 import org.openurp.edu.grade.domain.{AuditPlanContext, AuditPlanListener}
-import org.openurp.edu.grade.model.CoursePassedWay
-import org.openurp.edu.program.model.ExemptCourse
+import org.openurp.edu.grade.model.{AuditGroupResult, CoursePassedWay}
+import org.openurp.edu.program.model.{CourseGroup, ExemptCourse, StdExemptCourse}
 
 class AuditExemptCourseListener extends AuditPlanListener {
 
   var entityDao: EntityDao = _
 
-  override def end(context: AuditPlanContext): Unit = {
-    if (context.result.passed) return
-
+  override def start(context: AuditPlanContext): Unit = {
     val std = context.result.std
     val query = OqlBuilder.from(classOf[ExemptCourse], "ec")
     query.where("ec.project=:project and ec.level=:level", std.project, std.level)
     query.where("ec.fromGrade.code <= :gradeCode", std.grade.code)
     query.cacheable()
     val ecs = entityDao.search(query)
+    val exemptCourseTypes = Collections.newSet[CourseType]
     val exemptCourses = Collections.newSet[Course]
     for (ec <- ecs) {
       if (ec.toGrade.isEmpty || ec.toGrade.get.code.compareTo(std.grade.code) >= 0) {
-        if (ec.stds.contains(std) || ec.stds.isEmpty && ec.stdTypes.contains(std.stdType)) {
-          exemptCourses.add(ec.course)
+        if (ec.stdTypes.contains(std.stdType)) {
+          ec.course match
+            case None => exemptCourseTypes.add(ec.courseType)
+            case Some(c) => exemptCourses.add(c)
         }
       }
     }
+    //补充个人免修课程
+    exemptCourses ++= entityDao.findBy(classOf[StdExemptCourse], "std", std).map(_.course)
+
+    context.params.put("exemptCourseTypes", exemptCourseTypes.toSet)
+    context.params.put("exemptCourses", exemptCourses.toSet)
+  }
+
+  override def startGroup(context: AuditPlanContext, courseGroup: CourseGroup, groupResult: AuditGroupResult): Boolean = {
+    val courseTypes = context.getParam("exemptCourseTypes", classOf[Set[CourseType]])
+    !courseTypes.contains(courseGroup.courseType)
+  }
+
+  override def end(context: AuditPlanContext): Unit = {
+    if (context.result.passed) return
+
+    val std = context.result.std
+    val exemptCourses = context.getParam("exemptCourses", classOf[Set[Course]])
     //如果没有免修课程，那就算了
     if (exemptCourses.isEmpty) return
 

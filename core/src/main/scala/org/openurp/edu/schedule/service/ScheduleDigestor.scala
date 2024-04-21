@@ -88,9 +88,7 @@ object ScheduleDigestor {
       var merged = false
       for (added <- mergedActivities) {
         if (added.clazz == activity.clazz && isSameActivityExcept(added, activity, hasTeacher, hasRoom)) {
-          if (added.time.beginAt >= activity.time.beginAt) added.time.beginAt = activity.time.beginAt
-          if (added.time.endAt <= activity.time.endAt) added.time.endAt = activity.time.endAt
-          added.time.weekstate = new WeekState(added.time.weekstate.value | activity.time.weekstate.value)
+          added.mergeTime(activity)
           merged = true
         }
       }

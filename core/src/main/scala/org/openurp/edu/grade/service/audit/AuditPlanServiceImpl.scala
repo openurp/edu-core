@@ -43,13 +43,18 @@ class AuditPlanServiceImpl extends DefaultPlanAuditor, AuditPlanService, Logging
   var defaultListenerNames: String = _
 
   def audit(std: Student, params: collection.Map[String, Any], persist: Boolean): AuditPlanResult = {
+    val existResults = entityDao.findBy(classOf[AuditPlanResult], "std", std).headOption
+    if (existResults.nonEmpty && existResults.get.archived) {
+      return existResults.get
+    }
+
     logger.debug("start audit " + std.code)
     val coursePlan = coursePlanProvider.getCoursePlan(std).orNull
     val sharePlan = coursePlanProvider.getSharePlan(std)
     val stdGrade = new StdGrade(courseGradeProvider.getPublished(std))
     val projectListeners = listeners.get(std.project.id) match
       case None =>
-        val s = projectConfigService.get[String](std.project, Features.Grade.AuditRules)
+        val s = projectConfigService.get[String](std.project, Features.Grade.AuditPlanRules)
         val lsnNames = if (s.trim() == "default") then defaultListenerNames else s
         val lsners = Strings.split(lsnNames, ",").flatMap(n => container.getBean[AuditPlanListener]("auditPlanListener." + n)).toSeq
         listeners += (std.project.id -> lsners)
@@ -59,11 +64,20 @@ class AuditPlanServiceImpl extends DefaultPlanAuditor, AuditPlanService, Logging
     val context = new AuditPlanContext(std, coursePlan, sharePlan, stdGrade, projectListeners)
     context.params ++= params
 
-    val planAuditResult = audit(context)
+    val newResult = audit(context)
     if (persist) {
-      AuditPlanPersister.save(planAuditResult, entityDao)
+      val rs = if existResults.isEmpty then newResult else AuditPlanMerger.merge(newResult, existResults.get)
+      entityDao.saveOrUpdate(rs)
+      rs
+    } else {
+      newResult
     }
-    planAuditResult
+  }
+
+  private def getResult(std: Student, entityDao: EntityDao): Option[AuditPlanResult] = {
+    val query = OqlBuilder.from(classOf[AuditPlanResult], "planResult")
+    query.where("planResult.std = :std", std)
+    entityDao.search(query).headOption
   }
 
   def getResult(std: Student): Option[AuditPlanResult] = {

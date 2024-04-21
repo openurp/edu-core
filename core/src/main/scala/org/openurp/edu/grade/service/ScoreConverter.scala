@@ -33,7 +33,9 @@ class ScoreConverter(private var config: GradeRateConfig, private var expression
     val iterator = config.items.iterator
     while (iterator.hasNext) {
       val item = iterator.next()
-      defaultScoreMap.put(item.grade, item.defaultScore)
+      item.grade foreach { grade =>
+        defaultScoreMap.put(grade, item.defaultScore.get)
+      }
     }
   }
 
@@ -96,7 +98,7 @@ class ScoreConverter(private var config: GradeRateConfig, private var expression
    * @return
    */
   def calcGp(score: Option[Float]): Option[Float] = {
-    if (null==score || score.isEmpty || score.get <= 0) {
+    if (null == score || score.isEmpty || score.get <= 0) {
       Some(0)
     } else {
       val s = score.get

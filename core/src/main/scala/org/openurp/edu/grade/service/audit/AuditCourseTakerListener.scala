@@ -17,14 +17,19 @@
 
 package org.openurp.edu.grade.service.audit
 
+import org.beangle.commons.collection.Collections
 import org.beangle.data.dao.{EntityDao, OqlBuilder}
+import org.openurp.base.edu.model.Course
 import org.openurp.edu.clazz.model.CourseTaker
 import org.openurp.edu.grade.domain.{AuditPlanContext, AuditPlanListener}
 import org.openurp.edu.grade.model.{AuditCourseResult, AuditGroupResult, CourseGrade, Grade}
+import org.openurp.edu.program.domain.AlternativeCourseProvider
 
 class AuditCourseTakerListener extends AuditPlanListener {
 
   var entityDao: EntityDao = _
+
+  var alternativeCourseProvider: AlternativeCourseProvider = _
 
   override def end(context: AuditPlanContext): Unit = {
     if (context.result.passed) return
@@ -35,12 +40,51 @@ class AuditCourseTakerListener extends AuditPlanListener {
     val courseTakers = entityDao.search(builder)
     val last = getTargetGroupResult(context)
     val result = context.result
+    val used = Collections.newBuffer[CourseTaker]
     courseTakers foreach { ct =>
+      result.getCourseResult(ct.course) foreach { cr =>
+        used.addOne(ct)
+        cr.taking = true
+        cr.addRemark("在读")
+        cr.groupResult.addCourseResult(cr)
+      }
+    }
+
+    //剩余一些在读课程，考虑替代
+    val reminded = courseTakers.toBuffer.subtractAll(used).map(_.course).toSet
+    if (reminded.nonEmpty) {
+      val courseMap = Collections.newMap[Course, AuditCourseResult]
+      for (groupResult <- context.result.groupResults) {
+        for (car <- groupResult.courseResults) {
+          if !car.passed && !car.taking && !car.predicted then courseMap.put(car.course, car)
+        }
+      }
+      //如果有课程不及格，开始检查能否替代及格
+      if (courseMap.nonEmpty) {
+        val substitutions = alternativeCourseProvider.getAlternatives(context.result.std)
+        for (sc <- substitutions if sc.olds.subsetOf(courseMap.keySet) && sc.news.subsetOf(reminded)) {
+          for (ori <- sc.olds) {
+            val cr = courseMap(ori)
+            cr.taking = true
+            cr.addRemark("在读")
+            cr.addRemark(sc.news.map(_.name).mkString(","))
+            cr.groupResult.addCourseResult(cr)
+            used.addAll(courseTakers.filter(x => sc.news.contains(x.course)))
+          }
+        }
+      }
+    }
+    //如果找不到直接的审核结果,也不能替代的
+    courseTakers.toBuffer.subtractAll(used) foreach { ct =>
       var courseType = ct.courseType
       if (null == courseType) courseType = ct.clazz.courseType
       val target = context.getGroup(ct.course, courseType).flatMap(x => result.getGroupResult(x.name)).orElse(last)
-      target foreach { t => add2Group(ct, t, last.contains(t)) }
+      target foreach { t =>
+        used.addOne(ct)
+        add2Group(ct, t, last.contains(t))
+      }
     }
+
   }
 
   private def add2Group(taker: CourseTaker, groupResult: AuditGroupResult, isLast: Boolean): Unit = {

@@ -18,11 +18,24 @@
 package org.openurp.edu.ws
 
 import org.beangle.cdi.bind.BindModule
-import org.openurp.base.service.impl.SemesterServiceImpl
+import org.openurp.base.service.impl.{ProjectConfigServiceImpl, SemesterServiceImpl}
+import org.openurp.edu.ws.grade.AutoAuditJob
+import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler
+import org.springframework.scheduling.config.{CronTask, ScheduledTaskRegistrar}
 
 class DefaultModule extends BindModule {
 
   protected def binding(): Unit = {
     bind(classOf[SemesterServiceImpl])
+    bind(classOf[ProjectConfigServiceImpl])
+    bind(classOf[ConcurrentTaskScheduler])
+    bind(classOf[ScheduledTaskRegistrar]).nowire("triggerTasks", "triggerTasksList")
+    bind(classOf[AutoAuditJob]).lazyInit(false)
+    bindTask(classOf[AutoAuditJob], "0 0 7,12,17,22 * * *") //every five hours
+  }
+
+  protected def bindTask[T <: Runnable](clazz: Class[T], expression: String): Unit = {
+    val taskName = clazz.getName
+    bind(taskName + "Task", classOf[CronTask]).constructor(ref(taskName), expression).lazyInit(false)
   }
 }
