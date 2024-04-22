@@ -20,7 +20,7 @@ package org.openurp.edu.ws.grade
 import org.beangle.commons.lang.time.Stopwatch
 import org.beangle.commons.logging.Logging
 import org.beangle.data.dao.{LimitQuery, OqlBuilder, QueryPage}
-import org.beangle.data.orm.hibernate.DaoJob
+import org.beangle.data.orm.hibernate.{DaoJob, SessionHelper}
 import org.openurp.base.model.Project
 import org.openurp.base.service.ProjectConfigService
 import org.openurp.base.std.model.Student
@@ -48,12 +48,19 @@ class AutoAuditJob extends DaoJob, Logging {
         query.limit(1, 100)
         val sw = new Stopwatch(true)
         var cnt = 0
+        var i = 0
+        var startCode: String = null
         val results = new QueryPage(query.build().asInstanceOf[LimitQuery[Student]], entityDao)
         results foreach { std =>
+          if (null == startCode) startCode = std.code
           auditPlanService.audit(std, Map.empty, true)
           cnt += 1
+          if cnt % 100 == 0 then
+            SessionHelper.currentSession(this.sessionFactory).session.clear()
+            logger.info(s"audit ${startCode}~${std.code} using ${sw}")
+            sw.reset().start()
+            startCode = null
         }
-        logger.info(s"audit ${cnt} using ${sw}")
       }
     }
   }

@@ -28,7 +28,7 @@ import java.time.Instant
  * 计划审核保存
  *
  */
-object AuditPlanMerger extends Logging {
+object AuditPlanResultMerger extends Logging {
 
   def merge(newResult: AuditPlanResult, existedResult: AuditPlanResult): AuditPlanResult = {
     if (existedResult.archived) {
@@ -39,6 +39,7 @@ object AuditPlanMerger extends Logging {
     existedResult.owedCredits = newResult.owedCredits
     existedResult.owedCredits2 = newResult.owedCredits2
     existedResult.owedCredits3 = newResult.owedCredits3
+    existedResult.passedCredits = newResult.passedCredits
     existedResult.passed = newResult.passed
     existedResult.predicted = newResult.predicted
     val updates = new StringBuilder()

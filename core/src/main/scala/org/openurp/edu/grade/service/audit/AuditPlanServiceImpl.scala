@@ -66,7 +66,7 @@ class AuditPlanServiceImpl extends DefaultPlanAuditor, AuditPlanService, Logging
 
     val newResult = audit(context)
     if (persist) {
-      val rs = if existResults.isEmpty then newResult else AuditPlanMerger.merge(newResult, existResults.get)
+      val rs = if existResults.isEmpty then newResult else AuditPlanResultMerger.merge(newResult, existResults.get)
       entityDao.saveOrUpdate(rs)
       rs
     } else {
