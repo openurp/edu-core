@@ -5,5 +5,8 @@
     <module class="org.openurp.edu.ws.schedule.DefaultModule"/>
     <module class="org.openurp.edu.ws.clazz.DefaultModule"/>
     <module class="org.openurp.edu.ws.DefaultModule"/>
+    <module class="org.openurp.edu.grade.service.DefaultModule" />
+    <module class="org.openurp.edu.program.service.DefaultModule" />
+    <module class="org.openurp.edu.grade.service.AuditModule" />
   </container>
 </cdi>
