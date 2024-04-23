@@ -31,7 +31,7 @@ class DefaultModule extends BindModule {
     bind(classOf[ConcurrentTaskScheduler])
     bind(classOf[ScheduledTaskRegistrar]).nowire("triggerTasks", "triggerTasksList")
     bind(classOf[AutoAuditJob]).lazyInit(false)
-    bindTask(classOf[AutoAuditJob], "0 0 7,12,17,22 * * *") //every five hours
+    bindTask(classOf[AutoAuditJob], "0 0 7,11,15,19,23 * * *") //every four hours
   }
 
   protected def bindTask[T <: Runnable](clazz: Class[T], expression: String): Unit = {

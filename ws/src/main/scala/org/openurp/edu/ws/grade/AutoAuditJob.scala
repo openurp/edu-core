@@ -19,7 +19,7 @@ package org.openurp.edu.ws.grade
 
 import org.beangle.commons.lang.time.Stopwatch
 import org.beangle.commons.logging.Logging
-import org.beangle.data.dao.{LimitQuery, OqlBuilder, QueryPage}
+import org.beangle.data.dao.{OqlBuilder, QueryPage}
 import org.beangle.data.orm.hibernate.{DaoJob, SessionHelper}
 import org.openurp.base.model.Project
 import org.openurp.base.service.ProjectConfigService
@@ -38,7 +38,7 @@ class AutoAuditJob extends DaoJob, Logging {
     projects foreach { p =>
       val autoAudit = projectConfigService.get[Boolean](p, Features.Grade.AutoAuditPlan)
       if (autoAudit) {
-        logger.info(s"start auto auditing")
+        logger.info(s"start auto auditing project ${p.code}")
         val query = OqlBuilder.from(classOf[Student], "s")
         //在校，有效期内的学籍
         query.where("s.state.beginOn <= :now and s.state.endOn >=:now", LocalDate.now)
@@ -46,11 +46,12 @@ class AutoAuditJob extends DaoJob, Logging {
         query.where("s.project=:project", p)
         query.orderBy("s.code")
         query.limit(1, 100)
+        val sw0 = new Stopwatch(true)
         val sw = new Stopwatch(true)
         var cnt = 0
         var i = 0
         var startCode: String = null
-        val results = new QueryPage(query.build().asInstanceOf[LimitQuery[Student]], entityDao)
+        val results = QueryPage(query, entityDao)
         results foreach { std =>
           if (null == startCode) startCode = std.code
           auditPlanService.audit(std, Map.empty, true)
@@ -61,6 +62,7 @@ class AutoAuditJob extends DaoJob, Logging {
             sw.reset().start()
             startCode = null
         }
+        logger.info(s"end auto auditing, total ${cnt} using ${sw0}")
       }
     }
   }
