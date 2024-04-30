@@ -23,7 +23,7 @@ import org.openurp.edu.clazz.domain.DefaultClazzProvider
 class DefaultBindModule extends BindModule {
 
   override def binding(): Unit = {
-    bind(classOf[ClazzMaterialServiceImpl])
+    bind(classOf[ClazzDocServiceImpl])
     bind(classOf[DefaultClazzProvider])
   }
 }

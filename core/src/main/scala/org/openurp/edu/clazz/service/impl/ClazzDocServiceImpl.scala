@@ -17,38 +17,38 @@
 
 package org.openurp.edu.clazz.service.impl
 
-import jakarta.servlet.http.Part
 import org.beangle.data.dao.EntityDao
 import org.beangle.ems.app.EmsApp
 import org.beangle.security.Securities
 import org.openurp.base.model.User
-import org.openurp.edu.clazz.service.ClazzMaterialService
-import org.openurp.edu.clazz.model.{Clazz, ClazzBulletin, ClazzMaterial, ClazzNotice, ClazzNoticeFile}
+import org.openurp.edu.clazz.model.*
+import org.openurp.edu.clazz.service.ClazzDocService
+import org.openurp.edu.textbook.model.ClazzMaterial
 
 import java.io.InputStream
 import java.time.Instant
 
-class ClazzMaterialServiceImpl extends ClazzMaterialService {
+class ClazzDocServiceImpl extends ClazzDocService {
 
   var entityDao: EntityDao = _
 
-  override def createMaterial(clazz: Clazz, name: String, url: Option[String], in: Option[InputStream], fileName: Option[String]): ClazzMaterial = {
-    val material = new ClazzMaterial
-    material.clazz = clazz
+  override def createDoc(clazz: Clazz, name: String, url: Option[String], in: Option[InputStream], fileName: Option[String]): ClazzDoc = {
+    val doc = new ClazzDoc
+    doc.clazz = clazz
     val user = entityDao.findBy(classOf[User], "code", List(Securities.user)).head
-    material.updatedBy = user
-    material.updatedAt = Instant.now
-    material.name = name
+    doc.updatedBy = user
+    doc.updatedAt = Instant.now
+    doc.name = name
     val blob = EmsApp.getBlobRepository(true)
     in foreach { is =>
       val meta = blob.upload(s"/clazz/${clazz.semester.id}/${clazz.id}/material/", is, fileName.get, user.code + " " + user.name)
-      material.filePath = Some(meta.filePath)
+      doc.filePath = Some(meta.filePath)
     }
     url foreach { url =>
-      material.url = if (url.startsWith("http")) Some(url) else Some("http://" + url)
+      doc.url = if (url.startsWith("http")) Some(url) else Some("http://" + url)
     }
-    entityDao.saveOrUpdate(material)
-    material
+    entityDao.saveOrUpdate(doc)
+    doc
   }
 
   override def createNoticeFile(notice: ClazzNotice, is: InputStream, fileName: String): ClazzNoticeFile = {

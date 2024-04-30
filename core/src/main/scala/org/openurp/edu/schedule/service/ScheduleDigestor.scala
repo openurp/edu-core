@@ -197,7 +197,7 @@ object ScheduleDigestor {
       val sdf = new SimpleDateFormat("M月dd日起")
       replaceStart = CourseArrangeBuf.indexOf(ScheduleDigestor.starton)
       if (-1 != replaceStart) {
-        activity.clazz.schedule.firstDate foreach { f =>
+        activity.clazz.schedule.firstDateTime foreach { f =>
           CourseArrangeBuf.replace(replaceStart, replaceStart + ScheduleDigestor.starton.length, sdf.format(f))
         }
       }

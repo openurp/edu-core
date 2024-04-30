@@ -17,13 +17,13 @@
 
 package org.openurp.edu.clazz.service
 
-import org.openurp.edu.clazz.model.{Clazz, ClazzBulletin, ClazzMaterial, ClazzNotice, ClazzNoticeFile}
+import org.openurp.edu.clazz.model.*
 
 import java.io.InputStream
 
-trait ClazzMaterialService {
+trait ClazzDocService {
 
-  def createMaterial(clazz: Clazz, name: String, url: Option[String], in: Option[InputStream], fileName: Option[String]): ClazzMaterial
+  def createDoc(clazz: Clazz, name: String, url: Option[String], in: Option[InputStream], fileName: Option[String]): ClazzDoc
 
   def createNoticeFile(notice: ClazzNotice, in: InputStream, fileName: String): ClazzNoticeFile
 
