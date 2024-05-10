@@ -17,9 +17,13 @@
 
 package org.openurp.edu.course.service
 
+import org.openurp.base.edu.model.Course
+import org.openurp.base.hr.model.Teacher
 import org.openurp.base.model.{Project, Semester}
 
 trait CourseTaskService {
 
   def statTask(project: Project, semester: Semester): Int
+
+  def isDirector(course: Course, teacher: Teacher): Boolean
 }

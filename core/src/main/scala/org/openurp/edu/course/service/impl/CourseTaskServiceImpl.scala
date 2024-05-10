@@ -80,4 +80,11 @@ class CourseTaskServiceImpl extends CourseTaskService {
     entityDao.remove(existTasks.filter(t => !allTasksMap.contains(t.course, t.department)))
     total
   }
+
+  override def isDirector(course: Course, teacher: Teacher): Boolean = {
+    val q = OqlBuilder.from(classOf[CourseTask], "c")
+    q.where("c.course=:course", course)
+    q.where("c.director=:me", teacher)
+    entityDao.search(q).nonEmpty
+  }
 }
