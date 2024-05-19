@@ -54,6 +54,7 @@ class AuditCourseAbilityListener extends AuditPlanListener {
         groups foreach { g =>
           val groupName = g.courseType.name + " " + g.courseAbilityRate.get.subject.name //例如英语类
           val subjectGroupResult = result.getGroupResult(g.courseType.name).get //等级课程要求所在的组
+          var overCredits = false //是否必修课程学分超出要求学分
           val gr = abilityGroups.get(groupName) match {
             case None =>
               val groupResult = new AuditGroupResult(groupName, g.courseType)
@@ -61,7 +62,10 @@ class AuditCourseAbilityListener extends AuditPlanListener {
               groupResult.indexno = subjectGroupResult.indexno + ".1"
               groupResult.planResult = context.result
               groupResult.requiredCredits = g.planCourses.map(pc => if pc.compulsory then pc.course.getCredits(std.level) else 0).sum
-              groupResult.requiredCredits = Math.min(groupResult.requiredCredits, subjectGroupResult.requiredCredits) //不能超过上级组的要求学分
+              if (groupResult.requiredCredits > subjectGroupResult.requiredCredits) {
+                groupResult.requiredCredits = subjectGroupResult.requiredCredits //不能超过上级组的要求学分
+                overCredits = true
+              }
               abilityGroups.put(groupName, groupResult)
               result.addGroupResult(groupResult)
               subjectGroupResult.addChild(groupResult)
@@ -69,14 +73,20 @@ class AuditCourseAbilityListener extends AuditPlanListener {
             case Some(gr) =>
               val required = g.planCourses.map(pc => if pc.compulsory then pc.course.getCredits(std.level) else 0).sum
               if (required < gr.requiredCredits) gr.requiredCredits = required
-              gr.requiredCredits = Math.min(gr.requiredCredits, subjectGroupResult.requiredCredits) //不能超过上级组的要求学分
+              if (gr.requiredCredits > subjectGroupResult.requiredCredits) {
+                gr.requiredCredits = subjectGroupResult.requiredCredits //不能超过上级组的要求学分
+                overCredits = true
+              }
               gr
           }
           g.planCourses foreach { pc =>
             val cr = new AuditCourseResult(pc)
             val rate = pc.group.courseAbilityRate.get
             cr.addRemark(rate.name)
-            if (cr.compulsory && subjectRates(rate.subject).size > 1) cr.compulsory = false //有可能等级变动，每个等级的课程不能都是必修的
+            //有可能等级变动，每个等级的课程不能都是必修的
+            if (cr.compulsory && (subjectRates(rate.subject).size > 1 || overCredits)) {
+              cr.compulsory = false
+            }
             val courseGrades = context.stdGrade.useGrade(pc.course)
             cr.updatePassed(courseGrades)
             if cr.passed || pc.compulsory || cr.hasGrade then gr.addCourseResult(cr)
