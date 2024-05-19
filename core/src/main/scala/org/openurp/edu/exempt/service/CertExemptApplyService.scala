@@ -17,7 +17,7 @@
 
 package org.openurp.edu.exempt.service
 
-import org.openurp.edu.exempt.model.CertExemptApply
+import org.openurp.edu.exempt.flow.CertExemptApply
 
 trait CertExemptApplyService {
 

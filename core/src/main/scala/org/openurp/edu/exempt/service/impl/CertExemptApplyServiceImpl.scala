@@ -22,7 +22,7 @@ import org.beangle.data.dao.{EntityDao, OqlBuilder}
 import org.openurp.base.model.AuditStatus
 import org.openurp.base.service.SemesterService
 import org.openurp.code.edu.model.ExamStatus
-import org.openurp.edu.exempt.model.CertExemptApply
+import org.openurp.edu.exempt.flow.CertExemptApply
 import org.openurp.edu.exempt.service.{CertExemptApplyService, ExemptionService}
 import org.openurp.edu.extern.model.CertificateGrade
 import org.openurp.edu.grade.model.Grade

@@ -19,9 +19,9 @@ package org.openurp.edu.course.service.impl
 
 import org.beangle.commons.collection.Collections
 import org.beangle.data.dao.{EntityDao, OqlBuilder}
-import org.openurp.base.edu.model.Course
+import org.openurp.base.edu.model.{Course, CourseDirector, TeachingOffice}
 import org.openurp.base.hr.model.Teacher
-import org.openurp.base.model.{Department, Project, Semester}
+import org.openurp.base.model.{Department, Project, Semester, User}
 import org.openurp.code.edu.model.CourseType
 import org.openurp.edu.clazz.model.Clazz
 import org.openurp.edu.course.model.CourseTask
@@ -87,4 +87,41 @@ class CourseTaskServiceImpl extends CourseTaskService {
     q.where("c.director=:me", teacher)
     entityDao.search(q).nonEmpty
   }
+
+  def getDirector(course: Course, depart: Department, semester: Semester): Option[User] = {
+    val q = OqlBuilder.from(classOf[CourseTask], "ct")
+    q.where("ct.course=:course and ct.department=:department", course, depart)
+    q.where("ct.semester=:semester", semester)
+    val tasks = entityDao.search(q)
+    var director = tasks.headOption.flatMap(_.director)
+    if (director.isEmpty) {
+      director = entityDao.findBy(classOf[CourseDirector], "course", course).headOption.flatMap(_.director)
+    }
+    director match
+      case None => None
+      case Some(d) => entityDao.findBy(classOf[User], "code", d.code).headOption
+  }
+
+  override def getOfficeDirector(course: Course, depart: Department, semester: Semester): Option[User] = {
+    val q = OqlBuilder.from(classOf[CourseTask], "ct")
+    q.where("ct.course=:course and ct.department=:department", course, depart)
+    q.where("ct.semester=:semester", semester)
+    val tasks = entityDao.search(q)
+    var director = tasks.headOption.flatMap(_.office.flatMap(_.director))
+    if (director.isEmpty) {
+      director = entityDao.findBy(classOf[CourseDirector], "course", course).headOption.flatMap(_.office.flatMap(_.director))
+    }
+    director match
+      case None => None
+      case Some(d) => entityDao.findBy(classOf[User], "code", d.code).headOption
+  }
+
+  override def getOffice(course: Course, depart: Department, semester: Semester): Option[TeachingOffice] = {
+    val q = OqlBuilder.from(classOf[CourseTask], "ct")
+    q.where("ct.course=:course and ct.department=:department", course, depart)
+    q.where("ct.semester=:semester", semester)
+    val tasks = entityDao.search(q)
+    tasks.headOption.flatMap(_.office)
+  }
+
 }

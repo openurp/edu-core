@@ -17,13 +17,18 @@
 
 package org.openurp.edu.course.service
 
-import org.openurp.base.edu.model.Course
+import org.openurp.base.edu.model.{Course, TeachingOffice}
 import org.openurp.base.hr.model.Teacher
-import org.openurp.base.model.{Project, Semester}
+import org.openurp.base.model.{Department, Project, Semester, User}
 
 trait CourseTaskService {
 
   def statTask(project: Project, semester: Semester): Int
 
   def isDirector(course: Course, teacher: Teacher): Boolean
+
+  def getOffice(course: Course, depart: Department, semester: Semester): Option[TeachingOffice]
+
+  def getOfficeDirector(course: Course, depart: Department, semester: Semester): Option[User]
+
 }
