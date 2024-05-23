@@ -39,7 +39,7 @@ object LessonSchedule {
         }
       }
     }
-    schedules
+    schedules.sorted
   }
 
   def apply(ca: ClazzActivity, date: LocalDate, beginAt: LocalTime, endAt: LocalTime): LessonSchedule = {
@@ -56,6 +56,7 @@ object LessonSchedule {
     task.people = ca.teachers.map { x => Properties("id" -> x.id.toString, "code" -> x.code, "name" -> x.name) }.toSeq
     task.crn = clazz.crn
     s.units = s"${ca.beginUnit}-${ca.endUnit}"
+    s.hours = ca.endUnit - ca.beginUnit + 1
     s.room = ca.rooms.map(_.name).mkString(",")
     s.task = task
     s
@@ -67,6 +68,7 @@ class LessonSchedule extends LongId, Ordered[LessonSchedule] {
   var date: LocalDate = _
   var time: String = _
   var units: String = _
+  var hours: Int = _
   var room: String = _
 
   override def compare(that: LessonSchedule): Int = {
