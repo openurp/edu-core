@@ -25,7 +25,7 @@ trait AuditPlanService {
   def audit(std: Student, params: collection.Map[String, Any], persist: Boolean = false): AuditPlanResult
 
   /**
-   * 获得学生的计划完成审核结果<br>
+   * 获得学生的计划完成审 核结果<br>
    * 这个计划完成审核结果可能是部分审核的结果，也可能是全部审核的结果<br>
    *
    * @param std

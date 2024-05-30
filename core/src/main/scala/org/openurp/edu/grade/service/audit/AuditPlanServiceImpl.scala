@@ -56,7 +56,7 @@ class AuditPlanServiceImpl extends DefaultPlanAuditor, AuditPlanService, Logging
       case None =>
         val s = projectConfigService.get[String](std.project, Features.Grade.AuditPlanRules)
         val lsnNames = if (s.trim() == "default") then defaultListenerNames else s
-        val lsners = Strings.split(lsnNames, ",").flatMap(n => container.getBean[AuditPlanListener]("auditPlanListener." + n)).toSeq
+        val lsners = Strings.split(lsnNames, ",").flatMap(n => container.getBean[AuditPlanListener]("AuditPlanListener." + n)).toSeq
         listeners += (std.project.id -> lsners)
         lsners
       case Some(lsn) => lsn

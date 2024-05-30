@@ -49,7 +49,7 @@ class StudentWS extends ActionSupport {
 
         val activities = takers.flatMap(_.clazz.schedule.activities)
         val schedules = LessonSchedule.convert(activities, bAt, eAt)
-        val properties = schedules.sorted map { schedule =>
+        val properties = schedules.sortBy(_.orderWeekDayKey) map { schedule =>
           val properties = new Properties(schedule, "date", "time")
           val task = new Properties(schedule.task, "id", "semester", "subject", "taskType", "people", "crn")
           properties.put("task", task)

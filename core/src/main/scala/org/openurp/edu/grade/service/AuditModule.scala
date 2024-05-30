@@ -24,16 +24,16 @@ class AuditModule extends BindModule {
 
   protected override def binding(): Unit = {
     //不要改变监听器的顺序
-    bind("auditPlanListener.sameCourse", classOf[AuditSameCourseFilter])
-    bind("auditPlanListener.courseAbility", classOf[AuditCourseAbilityListener])
-    bind("auditPlanListener.alternative", classOf[AuditAlternativeListener])
-    bind("auditPlanListener.exemptCourse", classOf[AuditExemptCourseListener])
-    bind("auditPlanListener.courseTypeMatch", classOf[AuditCourseTypeMatchListener])
-    bind("auditPlanListener.shareCourse", classOf[AuditShareCourseListener])
-    bind("auditPlanListener.courseTaker", classOf[AuditCourseTakerListener])
-    bind("auditPlanListener.examTaker", classOf[AuditExamTakerListener])
-    bind("auditPlanListener.commonElective", classOf[AuditCommonElectiveListener])
-    bind("auditPlanListener.graduate", classOf[AuditGraduateListener])
+    bind("AuditPlanListener.sameCourse", classOf[AuditSameCourseFilter])
+    bind("AuditPlanListener.courseAbility", classOf[AuditCourseAbilityListener])
+    bind("AuditPlanListener.alternative", classOf[AuditAlternativeListener])
+    bind("AuditPlanListener.exemptCourse", classOf[AuditExemptCourseListener])
+    bind("AuditPlanListener.courseTypeMatch", classOf[AuditCourseTypeMatchListener])
+    bind("AuditPlanListener.shareCourse", classOf[AuditShareCourseListener])
+    bind("AuditPlanListener.courseTaker", classOf[AuditCourseTakerListener])
+    bind("AuditPlanListener.examTaker", classOf[AuditExamTakerListener])
+    bind("AuditPlanListener.commonElective", classOf[AuditCommonElectiveListener])
+    bind("AuditPlanListener.graduate", classOf[AuditGraduateListener])
 
     //成绩中的类别优先，然后是公共课程，这样方便选修课类别替换
     bind("auditPlanService", classOf[AuditPlanServiceImpl]).property("defaultListenerNames",

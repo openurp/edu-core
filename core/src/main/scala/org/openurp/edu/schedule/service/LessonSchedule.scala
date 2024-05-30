@@ -19,27 +19,46 @@ package org.openurp.edu.schedule.service
 
 import org.beangle.commons.collection.{Collections, Properties}
 import org.beangle.data.model.LongId
-import org.openurp.edu.clazz.model.ClazzActivity
+import org.openurp.edu.clazz.model.{Clazz, ClazzActivity}
 
 import java.time.{LocalDate, LocalDateTime, LocalTime}
 
 object LessonSchedule {
 
-  def convert(activities: Iterable[ClazzActivity], beginAt: LocalDateTime, endAt: LocalDateTime): collection.Seq[LessonSchedule] = {
-    val schedules = Collections.newBuffer[LessonSchedule]
+  def convert(clazz: Clazz): collection.Seq[LessonSchedule] = {
+    val schedules = Collections.newMap[LocalDateTime, LessonSchedule]
+    clazz.schedule.activities.foreach { activity =>
+      val beginTime = activity.time.beginAt.toLocalTime
+      val endTime = activity.time.endAt.toLocalTime
+      activity.time.dates foreach { date =>
+        val s1 = date.atTime(beginTime)
+        val e2 = date.atTime(endTime)
+        if (!schedules.contains(s1)) {
+          val schedule = LessonSchedule(activity, date, beginTime, endTime)
+          schedules.put(s1, schedule)
+        }
+      }
+    }
+    schedules.values.toSeq.sorted
+  }
+
+  def convert(activities: Iterable[ClazzActivity], beginAt: LocalDateTime, endAt: LocalDateTime):
+  collection.Seq[LessonSchedule] = {
+    val schedules = Collections.newMap[String, LessonSchedule]
     activities.foreach { activity =>
       val beginTime = activity.time.beginAt.toLocalTime
       val endTime = activity.time.endAt.toLocalTime
       activity.time.dates foreach { date =>
         val s1 = date.atTime(beginTime)
         val e2 = date.atTime(endTime)
-        if (s1.isBefore(endAt) && beginAt.isBefore(e2)) {
+        val key = activity.clazz.id.toString + s1.toString
+        if (s1.isBefore(endAt) && beginAt.isBefore(e2) && !schedules.contains(key)) {
           val schedule = LessonSchedule(activity, date, beginTime, endTime)
-          schedules.addOne(schedule)
+          schedules.put(key, schedule)
         }
       }
     }
-    schedules.sorted
+    schedules.values.toSeq
   }
 
   def apply(ca: ClazzActivity, date: LocalDate, beginAt: LocalTime, endAt: LocalTime): LessonSchedule = {
@@ -72,14 +91,18 @@ class LessonSchedule extends LongId, Ordered[LessonSchedule] {
   var room: String = _
 
   override def compare(that: LessonSchedule): Int = {
-    this.orderKey.compareTo(that.orderKey)
+    this.orderDayKey.compareTo(that.orderDayKey)
   }
 
   def teacherNames: String = {
     task.people.map(_.getOrElse("name", "--")).mkString(" ")
   }
 
-  def orderKey: String = {
+  def orderDayKey: String = {
+    task.subject.get("code").toString + date.toString + time
+  }
+
+  def orderWeekDayKey: String = {
     task.subject.get("code").toString + date.getDayOfWeek.getValue.toString + time + teacherNames + date.toString
   }
 }
