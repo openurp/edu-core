@@ -36,6 +36,7 @@ object AuditPlanResultMerger extends Logging {
     }
     existedResult.remark = newResult.remark
     existedResult.updatedAt = Instant.now
+    existedResult.requiredCredits = newResult.requiredCredits
     existedResult.owedCredits = newResult.owedCredits
     existedResult.owedCredits2 = newResult.owedCredits2
     existedResult.owedCredits3 = newResult.owedCredits3

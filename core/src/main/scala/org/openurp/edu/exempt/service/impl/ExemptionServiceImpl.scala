@@ -67,6 +67,7 @@ class ExemptionServiceImpl extends ExemptionService {
         } else None
     }
   }
+
   override def getSemester(program: Program, term: Option[Int]): Option[Semester] = {
     term match {
       case Some(t) => semesterService.get(program.project, program.beginOn, program.endOn, t)
@@ -183,7 +184,7 @@ class ExemptionServiceImpl extends ExemptionService {
         }
       }
       if null == semester then semester = semesterService.get(std.project, LocalDate.now)
-      if (null == courseType) courseType = c.courseType
+      if (null == courseType) courseType = c.courseType.orNull
 
       val grade = convertor.convert(std, ExemptionCourse(c, courseType, semester, score), provider, remark)
       entityDao.saveOrUpdate(grade)
