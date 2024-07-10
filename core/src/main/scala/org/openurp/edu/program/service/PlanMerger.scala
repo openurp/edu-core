@@ -43,6 +43,7 @@ object PlanMerger {
     target.indexno = source.indexno
     target.direction = source.direction
     target.hourRatios = source.hourRatios
+    target.required = source.required
     target.stage = source.stage
     target.departments = source.departments
     target.direction = source.direction
