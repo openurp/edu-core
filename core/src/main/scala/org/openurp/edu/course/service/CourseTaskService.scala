@@ -20,6 +20,7 @@ package org.openurp.edu.course.service
 import org.openurp.base.edu.model.{Course, TeachingOffice}
 import org.openurp.base.hr.model.Teacher
 import org.openurp.base.model.{Department, Project, Semester, User}
+import org.openurp.edu.course.model.CourseTask
 
 trait CourseTaskService {
 
@@ -27,8 +28,11 @@ trait CourseTaskService {
 
   def isDirector(course: Course, teacher: Teacher): Boolean
 
-  def getOffice(course: Course, depart: Department, semester: Semester): Option[TeachingOffice]
+  def isDirector(semester: Semester, course: Course, teacher: Teacher): Boolean
 
-  def getOfficeDirector(course: Course, depart: Department, semester: Semester): Option[User]
+  def getOffice(semester: Semester, course: Course, depart: Department): Option[TeachingOffice]
 
+  def getOfficeDirector(semester: Semester, course: Course, depart: Department): Option[User]
+
+  def getTasks(project: Project, semester: Semester, teacher: Teacher): Seq[CourseTask]
 }

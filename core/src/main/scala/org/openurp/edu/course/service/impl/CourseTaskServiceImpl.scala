@@ -88,7 +88,22 @@ class CourseTaskServiceImpl extends CourseTaskService {
     entityDao.search(q).nonEmpty
   }
 
-  def getDirector(course: Course, depart: Department, semester: Semester): Option[User] = {
+  override def isDirector(semester: Semester, course: Course, teacher: Teacher): Boolean = {
+    val q = OqlBuilder.from(classOf[CourseTask], "c")
+    q.where("c.semester=:semester", semester)
+    q.where("c.course=:course and c.director=:me", course, teacher)
+    entityDao.search(q).nonEmpty
+  }
+
+  override def getTasks(project: Project, semester: Semester, teacher: Teacher): Seq[CourseTask] = {
+    val q = OqlBuilder.from(classOf[CourseTask], "c")
+    q.where("c.course.project=:project", project)
+    q.where("c.semester=:semester", semester)
+    q.where("c.director=:me", teacher)
+    entityDao.search(q)
+  }
+
+  def getDirector(semester: Semester, course: Course, depart: Department): Option[User] = {
     val q = OqlBuilder.from(classOf[CourseTask], "ct")
     q.where("ct.course=:course and ct.department=:department", course, depart)
     q.where("ct.semester=:semester", semester)
@@ -102,7 +117,7 @@ class CourseTaskServiceImpl extends CourseTaskService {
       case Some(d) => entityDao.findBy(classOf[User], "code", d.code).headOption
   }
 
-  override def getOfficeDirector(course: Course, depart: Department, semester: Semester): Option[User] = {
+  override def getOfficeDirector(semester: Semester, course: Course, depart: Department): Option[User] = {
     val q = OqlBuilder.from(classOf[CourseTask], "ct")
     q.where("ct.course=:course and ct.department=:department", course, depart)
     q.where("ct.semester=:semester", semester)
@@ -116,7 +131,7 @@ class CourseTaskServiceImpl extends CourseTaskService {
       case Some(d) => entityDao.findBy(classOf[User], "code", d.code).headOption
   }
 
-  override def getOffice(course: Course, depart: Department, semester: Semester): Option[TeachingOffice] = {
+  override def getOffice(semester: Semester, course: Course, depart: Department): Option[TeachingOffice] = {
     val q = OqlBuilder.from(classOf[CourseTask], "ct")
     q.where("ct.course=:course and ct.department=:department", course, depart)
     q.where("ct.semester=:semester", semester)
