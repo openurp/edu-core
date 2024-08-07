@@ -35,4 +35,6 @@ trait CourseTaskService {
   def getOfficeDirector(semester: Semester, course: Course, depart: Department): Option[User]
 
   def getTasks(project: Project, semester: Semester, teacher: Teacher): Seq[CourseTask]
+
+  def getTask(semester: Semester, course: Course, teacher: Teacher): Option[CourseTask]
 }

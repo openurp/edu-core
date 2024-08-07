@@ -103,6 +103,14 @@ class CourseTaskServiceImpl extends CourseTaskService {
     entityDao.search(q)
   }
 
+  override def getTask(semester: Semester, course: Course, teacher: Teacher): Option[CourseTask] = {
+    val q = OqlBuilder.from(classOf[CourseTask], "c")
+    q.where("c.course=:course", course)
+    q.where("c.semester=:semester", semester)
+    q.where("c.director=:teacher", teacher)
+    entityDao.search(q).headOption
+  }
+
   def getDirector(semester: Semester, course: Course, depart: Department): Option[User] = {
     val q = OqlBuilder.from(classOf[CourseTask], "ct")
     q.where("ct.course=:course and ct.department=:department", course, depart)
