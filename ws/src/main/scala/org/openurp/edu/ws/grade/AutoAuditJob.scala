@@ -19,7 +19,7 @@ package org.openurp.edu.ws.grade
 
 import org.beangle.commons.lang.time.Stopwatch
 import org.beangle.commons.logging.Logging
-import org.beangle.data.dao.{OqlBuilder, QueryPage}
+import org.beangle.data.dao.OqlBuilder
 import org.beangle.data.orm.hibernate.{DaoJob, SessionHelper}
 import org.openurp.base.model.Project
 import org.openurp.base.service.ProjectConfigService
@@ -38,21 +38,15 @@ class AutoAuditJob extends DaoJob, Logging {
     projects foreach { p =>
       val autoAudit = projectConfigService.get[Boolean](p, Features.Grade.AutoAuditPlan)
       if (autoAudit) {
-        logger.info(s"start auto auditing project ${p.code}")
-        val query = OqlBuilder.from(classOf[Student], "s")
-        //在校，有效期内的学籍
-        query.where("s.state.beginOn <= :now and s.state.endOn >=:now", LocalDate.now)
-        query.where("s.state.inschool=true")
-        query.where("s.project=:project", p)
-        query.orderBy("s.code")
-        query.limit(1, 100)
+        val stdIds = getStdIds(p)
+        logger.info(s"start auto auditing project ${p.code} ${stdIds.size} students")
         val sw0 = new Stopwatch(true)
         val sw = new Stopwatch(true)
         var cnt = 0
         var i = 0
         var startCode: String = null
-        val results = QueryPage(query, entityDao)
-        results foreach { std =>
+        stdIds foreach { stdId =>
+          val std = entityDao.get(classOf[Student], stdId)
           if (null == startCode) startCode = std.code
           auditPlanService.audit(std, Map.empty, true)
           cnt += 1
@@ -65,5 +59,17 @@ class AutoAuditJob extends DaoJob, Logging {
         logger.info(s"end auto auditing, total ${cnt} using ${sw0}")
       }
     }
+
+  }
+
+  private def getStdIds(p: Project): Seq[Long] = {
+    val query = OqlBuilder.from[Long](classOf[Student].getName, "s")
+    //在校，有效期内的学籍
+    query.where("s.state.beginOn <= :now and s.state.endOn >=:now", LocalDate.now)
+    query.where("s.state.inschool=true")
+    query.where("s.project=:project", p)
+    query.orderBy("s.code")
+    query.select("s.id")
+    entityDao.search(query)
   }
 }
