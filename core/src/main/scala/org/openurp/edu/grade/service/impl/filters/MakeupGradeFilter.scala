@@ -15,14 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openurp.edu.grade.service.impl
+package org.openurp.edu.grade.service.impl.filters
 
 import org.beangle.commons.collection.Collections
-import org.openurp.edu.grade.model.CourseGrade
-import org.openurp.edu.grade.model.GaGrade
-import org.openurp.edu.grade.service.GradeRateService
-import org.openurp.edu.grade.service.ScoreConverter
 import org.openurp.edu.grade.domain.GradeFilter
+import org.openurp.edu.grade.model.CourseGrade
+import org.openurp.edu.grade.service.GradeRateService
 
 /**
  * 想把补考成绩和期末总评平行打印出来的过滤器
@@ -31,7 +29,7 @@ class MakeupGradeFilter extends GradeFilter {
 
   var gradeRateService: GradeRateService = _
 
-  override def filter(grades: Iterable[CourseGrade]):Iterable[CourseGrade] = {
+  override def filter(grades: Iterable[CourseGrade]): Iterable[CourseGrade] = {
     val gradeList = Collections.newBuffer[CourseGrade]
     for (courseGrade <- grades) {
       var finded = false
@@ -49,8 +47,7 @@ class MakeupGradeFilter extends GradeFilter {
         newGrade.score = gaGrade.score
         newGrade.passed = gaGrade.passed
         newGrade.gradingMode = gaGrade.gradingMode
-        val converter = gradeRateService.getConverter(courseGrade.project, gaGrade.gradingMode)
-        newGrade.gp = converter.calcGp(newGrade.score)
+        newGrade.gp = gaGrade.gp
         finded = true
         gradeList += newGrade
       }

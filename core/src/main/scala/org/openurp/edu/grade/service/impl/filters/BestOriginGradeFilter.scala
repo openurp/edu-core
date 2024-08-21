@@ -15,13 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openurp.edu.grade.service.impl
+package org.openurp.edu.grade.service.impl.filters
 
 import org.beangle.commons.collection.Collections
 import org.openurp.base.edu.model.Course
+import org.openurp.edu.grade.domain.{GradeComparator, GradeFilter}
 import org.openurp.edu.grade.model.CourseGrade
-import org.openurp.edu.grade.domain.GradeComparator
-import org.openurp.edu.grade.domain.GradeFilter
 import org.openurp.edu.program.domain.AlternativeCourseProvider
 import org.openurp.edu.program.model.AlternativeCourse
 
