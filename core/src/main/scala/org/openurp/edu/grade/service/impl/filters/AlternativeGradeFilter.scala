@@ -100,7 +100,8 @@ object AlternativeGradeFilter {
       val oGrade = alternativeGradeMap.getOrElseUpdate(subCourse.olds, build(subCourse.olds, gradeMap))
       val nGrade = alternativeGradeMap.getOrElseUpdate(subCourse.news, build(subCourse.news, gradeMap))
       val matched = groups.find { group =>
-        group.alternatives.exists(sc => subCourse.news == sc.olds || subCourse.olds == sc.news)
+        val rs = group.alternatives.find(sc => subCourse.news == sc.olds || subCourse.olds == sc.news)
+        rs.nonEmpty
       }
 
       matched match
