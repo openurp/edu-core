@@ -64,7 +64,7 @@ object ScheduleDigestor {
   private def isSameActivityExcept(target: ClazzActivity, other: ClazzActivity, teacher: Boolean, room: Boolean): Boolean = {
     if (teacher) if (!(target.teachers == other.teachers)) return false
     if (room) if (!(target.rooms == other.rooms)) return false
-    target.time.mergeable(other.time, 20)
+    target.time.mergeable(other.time, 31)
   }
 
   def merge(semester: Semester, activities: collection.Iterable[ClazzActivity], hasTeacher: Boolean, hasRoom: Boolean): collection.Seq[ClazzActivity] = {

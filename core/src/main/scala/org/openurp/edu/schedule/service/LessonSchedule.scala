@@ -27,7 +27,8 @@ object LessonSchedule {
 
   def convert(clazz: Clazz): collection.Seq[LessonSchedule] = {
     val schedules = Collections.newMap[LocalDateTime, LessonSchedule]
-    clazz.schedule.activities.foreach { activity =>
+    val merged = ScheduleDigestor.merge(clazz.semester,clazz.schedule.activities,true,true)
+    merged.foreach { activity =>
       val beginTime = activity.time.beginAt.toLocalTime
       val endTime = activity.time.endAt.toLocalTime
       activity.time.dates foreach { date =>
