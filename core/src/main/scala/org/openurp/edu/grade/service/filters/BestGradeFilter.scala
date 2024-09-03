@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openurp.edu.grade.service.impl.filters
+package org.openurp.edu.grade.service.filters
 
 import org.openurp.edu.grade.domain.GradeFilter
 import org.openurp.edu.grade.model.CourseGrade

@@ -32,7 +32,7 @@ class AuditCommonElectiveListener extends AuditPlanListener {
     val stdGrade = context.stdGrade
     context.coursePlan.program.offsetType foreach { electiveType =>
       result.getGroupResult(electiveType.name) foreach { gr =>
-        gr.indexno = "99.99" //尽量放到最后
+        gr.indexno = "99.00" //尽量放到最后
         for (course <- stdGrade.restCourses) {
           val grades = stdGrade.useGrade(course)
           val credits = course.getCredits(result.std.level)

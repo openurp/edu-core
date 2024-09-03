@@ -34,9 +34,10 @@ class AuditModule extends BindModule {
     bind("AuditPlanListener.examTaker", classOf[AuditExamTakerListener])
     bind("AuditPlanListener.commonElective", classOf[AuditCommonElectiveListener])
     bind("AuditPlanListener.graduate", classOf[AuditGraduateListener])
+    bind("AuditPlanListener.last", classOf[AuditLastListener])
 
     //成绩中的类别优先，然后是公共课程，这样方便选修课类别替换
     bind("auditPlanService", classOf[AuditPlanServiceImpl]).property("defaultListenerNames",
-      "courseAbility,alternative,exemptCourse,courseTypeMatch,shareCourse,courseTaker,examTaker,commonElective,graduate")
+      "courseAbility,alternative,exemptCourse,courseTypeMatch,shareCourse,courseTaker,examTaker,commonElective,graduate,last")
   }
 }

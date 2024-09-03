@@ -21,7 +21,7 @@ import org.openurp.base.model.Semester
 import org.openurp.base.std.model.Student
 import org.openurp.edu.grade.domain.DefaultCourseGradeProvider
 import org.openurp.edu.grade.model.CourseGrade
-import org.openurp.edu.grade.service.impl.filters.BestGradeFilter
+import org.openurp.edu.grade.service.filters.BestGradeFilter
 
 class BestCourseGradeProviderImpl extends DefaultCourseGradeProvider {
 

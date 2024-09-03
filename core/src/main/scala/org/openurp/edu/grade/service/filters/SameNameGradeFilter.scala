@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openurp.edu.grade.service.impl.filters
+package org.openurp.edu.grade.service.filters
 
 import org.beangle.commons.collection.Collections
 import org.openurp.code.edu.model.CourseRank

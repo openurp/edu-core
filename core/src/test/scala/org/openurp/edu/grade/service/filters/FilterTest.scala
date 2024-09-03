@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openurp.edu.grade.service.impl.filters
+package org.openurp.edu.grade.service.filters
 
 import org.beangle.commons.collection.Collections
 import org.openurp.base.edu.model.Course
@@ -23,6 +23,7 @@ import org.openurp.base.model.Semester
 import org.openurp.base.std.model.Student
 import org.openurp.code.edu.model.{CourseTakeType, EducationLevel}
 import org.openurp.edu.grade.model.CourseGrade
+import org.openurp.edu.grade.service.filters.{AlternativeGradeFilter, FirstGradeFilter}
 import org.openurp.edu.program.model.StdAlternativeCourse
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
@@ -30,7 +31,6 @@ import org.scalatest.matchers.should.Matchers
 import java.time.LocalDate
 
 class FilterTest extends AnyFunSpec with Matchers {
-
 
   describe("Filter") {
     val std = new Student

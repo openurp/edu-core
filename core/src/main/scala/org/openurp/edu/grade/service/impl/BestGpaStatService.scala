@@ -22,7 +22,7 @@ import org.openurp.base.std.model.Student
 import org.openurp.edu.grade.domain.{CourseGradeProvider, GpaPolicy}
 import org.openurp.edu.grade.model.{CourseGrade, StdGpa, StdSemesterGpa, StdYearGpa}
 import org.openurp.edu.grade.service.GpaStatService
-import org.openurp.edu.grade.service.impl.filters.BestGradeFilter
+import org.openurp.edu.grade.service.filters.BestGradeFilter
 
 class BestGpaStatService extends GpaStatService {
 
