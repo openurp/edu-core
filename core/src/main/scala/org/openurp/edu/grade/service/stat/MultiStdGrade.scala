@@ -121,7 +121,6 @@ class MultiStdGrade(var semester: Semester, grades: collection.Map[Student, Seq[
 class CourseStdNum(val course: Course, var count: Int) extends Ordered[CourseStdNum] {
 
   def compare(o: CourseStdNum): Int = {
-    Objects.compareBuilder.add(o.count, this.count)
-      .toComparison()
+    Objects.compareBuilder.add(o.count, this.count).toComparison
   }
 }

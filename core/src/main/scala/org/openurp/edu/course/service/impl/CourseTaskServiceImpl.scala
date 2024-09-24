@@ -50,6 +50,20 @@ class CourseTaskServiceImpl extends CourseTaskService {
       ts += teacher
     }
 
+    val builder2 = OqlBuilder.from[Array[Any]](classOf[Clazz].getName, "clazz")
+    builder2.where("clazz.semester=:semester and clazz.project=:project", semester, project)
+    builder2.where("size(clazz.teachers)=0")
+    builder2.select("clazz.course,clazz.teachDepart,clazz.courseType")
+    val allTasks2 = entityDao.search(builder2)
+    allTasks2 foreach { d =>
+      val course = d(0).asInstanceOf[Course]
+      val depart = d(1).asInstanceOf[Department]
+      val courseType = d(2).asInstanceOf[CourseType]
+      val task = allTasksMap.getOrElseUpdate((course, depart), mutable.Map[CourseType, mutable.Set[Teacher]]())
+      task.getOrElseUpdate(courseType, mutable.HashSet[Teacher]())
+    }
+
+    //查找没有教师的教学任务
     val q = OqlBuilder.from(classOf[CourseTask], "task")
     q.where("task.course.project=:project and task.semester=:semester", project, semester)
     val existTasks = entityDao.search(q)
@@ -60,7 +74,7 @@ class CourseTaskServiceImpl extends CourseTaskService {
 
     var total = 0
     allTasksMap foreach { case ((course, depart), taskMap) =>
-      var courseType: CourseType = taskMap.head._1
+      var courseType = taskMap.head._1
       var teacherCnt = taskMap.head._2.size
       val teachers = Collections.newSet[Teacher]
       taskMap.foreach { t =>
@@ -71,11 +85,13 @@ class CourseTaskServiceImpl extends CourseTaskService {
         teachers ++= t._2
       }
       val task = existMap.getOrElse((course, depart), new CourseTask(course, depart, semester, courseType))
-      task.courseType = courseType
-      task.teachers.clear()
-      task.teachers ++= teachers
-      if (!task.persisted) total += 1
-      entityDao.saveOrUpdate(task)
+      if (!task.confirmed) {
+        task.courseType = courseType
+        task.teachers.clear()
+        task.teachers ++= teachers
+        if (!task.persisted) total += 1
+        entityDao.saveOrUpdate(task)
+      }
     }
     entityDao.remove(existTasks.filter(t => !allTasksMap.contains(t.course, t.department)))
     total

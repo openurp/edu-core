@@ -23,7 +23,7 @@ import org.openurp.base.service.ProjectConfigService
 import org.openurp.base.std.model.Student
 import org.openurp.code.edu.model.{CourseTakeType, ExamStatus, GradeType, GradingMode}
 import org.openurp.edu.grade.model.*
-import org.openurp.edu.grade.service.{CourseGradeCalculator, CourseGradeSetting, CourseGradeSettings, GradeRateService}
+import org.openurp.edu.grade.service.{CourseGradeCalculator, GradeRateService}
 import org.openurp.edu.service.Features
 
 import java.time.Instant
@@ -291,15 +291,9 @@ class DefaultCourseGradeCalculator extends CourseGradeCalculator {
 
   private def guessFinalStatus(grade: CourseGrade): Int = {
     var status = Grade.Status.New
-    grade.getGaGrade(EndGa) foreach { ga =>
-      if (ga.status > status) status = ga.status
-    }
-    grade.getGaGrade(MakeupGa) foreach { ga =>
-      if (ga.status > status) status = ga.status
-    }
-    grade.getGaGrade(DelayGa) foreach { ga =>
-      if (ga.status > status) status = ga.status
-    }
+    grade.getGaGrade(EndGa) foreach { ga => if (ga.status > status) status = ga.status }
+    grade.getGaGrade(MakeupGa) foreach { ga => if (ga.status > status) status = ga.status }
+    grade.getGaGrade(DelayGa) foreach { ga => if (ga.status > status) status = ga.status }
     status
   }
 
