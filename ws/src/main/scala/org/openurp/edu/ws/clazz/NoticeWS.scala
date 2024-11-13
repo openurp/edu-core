@@ -64,7 +64,6 @@ class NoticeWS extends ActionSupport {
     val query = OqlBuilder.from(classOf[ClazzNotice], "cn")
     query.where("cn.clazz in(:clazzes)", clazzes)
     query.orderBy("cn.updatedAt desc")
-    //query.limit(1, 10)
     entityDao.search(query)
   }
 }
