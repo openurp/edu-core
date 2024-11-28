@@ -19,7 +19,6 @@ package org.openurp.edu.exempt.service.impl
 
 import org.beangle.data.dao.{EntityDao, OqlBuilder}
 import org.beangle.security.Securities
-import org.beangle.web.action.context.Params.converter
 import org.openurp.base.std.model.Student
 import org.openurp.code.edu.model.{CourseTakeType, GradeType, GradingMode}
 import org.openurp.edu.clazz.model.CourseTaker

@@ -17,7 +17,7 @@
 
 package org.openurp.edu.ws.schedule
 
-import org.beangle.cdi.bind.BindModule
+import org.beangle.commons.cdi.BindModule
 
 class DefaultModule extends BindModule {
 

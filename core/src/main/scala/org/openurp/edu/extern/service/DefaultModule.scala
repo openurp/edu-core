@@ -17,7 +17,7 @@
 
 package org.openurp.edu.extern.service
 
-import org.beangle.cdi.bind.BindModule
+import org.beangle.commons.cdi.BindModule
 import org.openurp.edu.extern.service.impl.DefaultCertificateGradeService
 import org.openurp.edu.extern.service.signup.impl.{DefaultCertSignupService, SignupBuildInChecker}
 

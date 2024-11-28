@@ -17,7 +17,7 @@
 
 package org.openurp.edu.clazz.service.impl
 
-import org.beangle.cdi.bind.BindModule
+import org.beangle.commons.cdi.BindModule
 import org.openurp.edu.clazz.domain.DefaultClazzProvider
 
 class DefaultBindModule extends BindModule {

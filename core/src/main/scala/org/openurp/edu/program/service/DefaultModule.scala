@@ -17,7 +17,7 @@
 
 package org.openurp.edu.program.service
 
-import org.beangle.cdi.bind.BindModule
+import org.beangle.commons.cdi.BindModule
 import org.openurp.edu.program.domain.{DefaultAlternativeCourseProvider, DefaultCoursePlanProvider, DefaultProgramProvider}
 
 class DefaultModule extends BindModule {

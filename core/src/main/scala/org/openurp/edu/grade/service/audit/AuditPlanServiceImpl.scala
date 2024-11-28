@@ -17,7 +17,7 @@
 
 package org.openurp.edu.grade.service.audit
 
-import org.beangle.cdi.{Container, ContainerAware}
+import org.beangle.commons.cdi.{Container, ContainerAware}
 import org.beangle.commons.lang.Strings
 import org.beangle.commons.logging.Logging
 import org.beangle.data.dao.{EntityDao, OqlBuilder}

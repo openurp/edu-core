@@ -17,7 +17,7 @@
 
 package org.openurp.edu.exempt.service
 
-import org.beangle.cdi.bind.BindModule
+import org.beangle.commons.cdi.BindModule
 import org.openurp.edu.exempt.service.impl.{CertExemptApplyServiceImpl, ExemptionServiceImpl}
 
 class DefaultModule extends BindModule {

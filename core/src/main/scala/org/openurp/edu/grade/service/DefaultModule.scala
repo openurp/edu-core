@@ -17,7 +17,7 @@
 
 package org.openurp.edu.grade.service
 
-import org.beangle.cdi.bind.BindModule
+import org.beangle.commons.cdi.BindModule
 import org.openurp.edu.grade.domain.{DefaultCourseGradeProvider, DefaultGpaPolicy}
 import org.openurp.edu.grade.service.filters.{BestGradeFilter, BestOriginGradeFilter, MakeupGradeFilter, ScriptGradeFilter}
 import org.openurp.edu.grade.service.impl.*

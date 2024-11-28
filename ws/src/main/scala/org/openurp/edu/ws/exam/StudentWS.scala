@@ -19,9 +19,9 @@ package org.openurp.edu.ws.exam
 
 import org.beangle.commons.collection.Properties
 import org.beangle.data.dao.{EntityDao, OqlBuilder}
-import org.beangle.web.action.annotation.{mapping, param, response}
-import org.beangle.web.action.context.Params
-import org.beangle.web.action.support.ActionSupport
+import org.beangle.webmvc.annotation.{mapping, param, response}
+import org.beangle.webmvc.context.Params
+import org.beangle.webmvc.support.ActionSupport
 import org.openurp.base.model.Semester
 import org.openurp.base.std.model.Student
 import org.openurp.edu.exam.model.ExamTaker

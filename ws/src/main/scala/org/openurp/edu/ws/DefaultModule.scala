@@ -17,7 +17,7 @@
 
 package org.openurp.edu.ws
 
-import org.beangle.cdi.bind.BindModule
+import org.beangle.commons.cdi.BindModule
 import org.openurp.base.service.impl.{ProjectConfigServiceImpl, SemesterServiceImpl}
 import org.openurp.edu.ws.grade.AutoAuditJob
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler
