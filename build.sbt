@@ -1,5 +1,5 @@
-import org.openurp.parent.Dependencies._
-import org.openurp.parent.Settings._
+import org.openurp.parent.Dependencies.*
+import org.openurp.parent.Settings.*
 
 ThisBuild / version := "0.3.7-SNAPSHOT"
 
@@ -30,15 +30,18 @@ val openurp_std_api = "org.openurp.std" % "openurp-std-api" % apiVer
 val openurp_stater_ws = "org.openurp.starter" % "openurp-starter-ws" % starterVer
 
 lazy val root = (project in file("."))
-  .settings(common)
-  .aggregate(core,ws)
+  .settings(
+    common,
+    name := "openurp-edu-core-root",
+    organization := "org.openurp.edu")
+  .aggregate(core, ws)
 
 lazy val core = (project in file("core"))
   .settings(
     name := "openurp-edu-core",
     organization := "org.openurp.edu",
     common,
-    libraryDependencies ++= Seq(openurp_edu_api,openurp_std_api),
+    libraryDependencies ++= Seq(openurp_edu_api, openurp_std_api),
     libraryDependencies ++= Seq(beangle_ems_app),
     libraryDependencies ++= Seq(beangle_doc_transfer, beangle_cdi, beangle_security, gson)
   )
@@ -49,9 +52,9 @@ lazy val ws = (project in file("ws"))
     name := "openurp-edu-ws",
     organization := "org.openurp.edu",
     common,
-    libraryDependencies ++= Seq(openurp_edu_api,openurp_std_api),
-    libraryDependencies ++= Seq(beangle_ems_app,openurp_stater_ws),
-    libraryDependencies ++= Seq(spring_tx,spring_jdbc)
+    libraryDependencies ++= Seq(openurp_edu_api, openurp_std_api),
+    libraryDependencies ++= Seq(beangle_ems_app, openurp_stater_ws),
+    libraryDependencies ++= Seq(spring_tx, spring_jdbc)
   ).dependsOn(core)
 
 publish / skip := true
