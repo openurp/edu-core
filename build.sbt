@@ -1,7 +1,7 @@
 import org.openurp.parent.Dependencies.*
 import org.openurp.parent.Settings.*
 
-ThisBuild / version := "0.3.8-SNAPSHOT"
+ThisBuild / version := "0.3.8"
 
 ThisBuild / scmInfo := Some(
   ScmInfo(
@@ -22,8 +22,8 @@ ThisBuild / developers := List(
 ThisBuild / description := "OpenURP Edu Core Library"
 ThisBuild / homepage := Some(url("http://openurp.github.io/edu-core/index.html"))
 
-val apiVer = "0.41.14"
-val starterVer = "0.3.48"
+val apiVer = "0.42.0"
+val starterVer = "0.3.54"
 
 val openurp_edu_api = "org.openurp.edu" % "openurp-edu-api" % apiVer
 val openurp_std_api = "org.openurp.std" % "openurp-std-api" % apiVer
@@ -43,7 +43,7 @@ lazy val core = (project in file("core"))
     common,
     libraryDependencies ++= Seq(openurp_edu_api, openurp_std_api),
     libraryDependencies ++= Seq(beangle_ems_app),
-    libraryDependencies ++= Seq(beangle_doc_transfer, beangle_cdi, beangle_security, gson)
+    libraryDependencies ++= Seq(beangle_doc_transfer, beangle_cdi, beangle_security)
   )
 
 lazy val ws = (project in file("ws"))
