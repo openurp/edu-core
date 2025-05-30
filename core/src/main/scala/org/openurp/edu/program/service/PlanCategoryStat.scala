@@ -24,22 +24,12 @@ import org.openurp.code.edu.model
 import org.openurp.code.edu.model.{CourseRank, CourseType, TeachingNature}
 import org.openurp.edu.program.model.{CourseGroup, CoursePlan}
 
-import javax.script.ScriptEngineManager
 import scala.collection.mutable
 
 /**
  * 培养方案学分、学时统计
  */
 object PlanCategoryStat {
-
-  def main(args: Array[String]): Unit = {
-    val scriptEngineManager = new ScriptEngineManager()
-    val scriptEngine = scriptEngineManager.getEngineByName("scala")
-
-    val scalaScript = "val message = \"Hello, Scala!\"\n" + "println(message)"
-
-    scriptEngine.eval(scalaScript)
-  }
 
   def stat(plan: CoursePlan, natures: collection.Seq[TeachingNature]): PlanCategoryStat = {
     val defaultNature = natures.find(_.id == 1).get
@@ -48,25 +38,24 @@ object PlanCategoryStat {
     val groups = Collections.newBuffer[CourseGroup]
     //收集顶层可以开始统计的课程组
     for (tg <- plan.topGroups) {
-      collectGroups(tg, groups)
+      collectTopGroups(tg, groups)
     }
     for (group <- groups) {
       if (group.optional) {
         val theory = stat.getOrCreateCategory(group, false, false, false, stat.maxterm)
         val practical = stat.getOrCreateCategory(group, false, true, false, stat.maxterm)
         stat.statOptionalGroup(group, theory, practical)
-      }
-      else stat.statCompulsoryGroup(group)
+      } else stat.statCompulsoryGroup(group)
     }
     stat
   }
 
-  private def collectGroups(group: CourseGroup, results: mutable.Buffer[CourseGroup]): Unit = {
+  private def collectTopGroups(group: CourseGroup, results: mutable.Buffer[CourseGroup]): Unit = {
     if (group.rank.nonEmpty) {
       results.addOne(group)
     } else {
       group.children foreach { g =>
-        collectGroups(g, results)
+        collectTopGroups(g, results)
       }
     }
   }
@@ -78,6 +67,8 @@ class PlanCategoryStat(plan: CoursePlan, val credits: Float, natures: collection
   var maxterm = plan.program.endTerm
   var hasOptional = false
   val categoryStats = Collections.newBuffer[CategoryStat]
+
+  private val level = plan.program.level
 
   def statOptionalGroup(group: CourseGroup, theory: CategoryStat, practical: CategoryStat): Unit = {
     this.hasOptional = true //该计划包含选修课
@@ -124,21 +115,21 @@ class PlanCategoryStat(plan: CoursePlan, val credits: Float, natures: collection
       isPurePractical(c, cj, g.courseType) match {
         case Some(pp) =>
           if (pp) {
-            practical.addCourse(c.defaultCredits, Map(practicalNature -> cj.creditHours), pc.terms)
+            practical.addCourse(c.getCredits(level), Map(practicalNature -> cj.creditHours), pc.terms)
           } else {
-            theory.addCourse(c.defaultCredits, Map(lectureNature -> cj.creditHours), pc.terms)
+            theory.addCourse(c.getCredits(level), Map(lectureNature -> cj.creditHours), pc.terms)
           }
         case None =>
           cj.hours foreach { h =>
             if (c.practical || g.courseType.module.nonEmpty && g.courseType.module.get.practical) { //实践课
               if (h.nature.id == practicalNature.id) {
-                practical.addCourse(c.defaultCredits, Map(practicalNature -> h.creditHours), pc.terms)
+                practical.addCourse(c.getCredits(level), Map(practicalNature -> h.creditHours), pc.terms)
               } else {
                 innerTheory.addCourse(0f, Map(lectureNature -> h.creditHours), Terms.empty)
               }
             } else { //理论课
               if (h.nature.id == lectureNature.id) {
-                theory.addCourse(c.defaultCredits, Map(lectureNature -> h.creditHours), pc.terms)
+                theory.addCourse(c.getCredits(level), Map(lectureNature -> h.creditHours), pc.terms)
               } else {
                 innerPractical.addCourse(0f, Map(practicalNature -> h.creditHours), Terms.empty)
               }
@@ -218,7 +209,7 @@ class PlanCategoryStat(plan: CoursePlan, val credits: Float, natures: collection
         }
       }
     }
-    println(s"total:${total},转算：${innerHours},转算学分:${innerHours / 16.0}")
+    //println(s"total:${total},转算：${innerHours},转算学分:${innerHours / 16.0}")
     val c = total + innerHours / 16.0
     if (c % 1 >= 0.5) {
       if c % 1 >= 0.7 then c.intValue + 1 else c.intValue + 0.5
@@ -266,7 +257,8 @@ class PlanCategoryStat(plan: CoursePlan, val credits: Float, natures: collection
     val results = Collections.newBuffer[CategoryStat]
     for (cs <- categoryStats) {
       cs.rank foreach { r =>
-        if (r.id == CourseRank.FreeSelective) {
+        //自由选修和选修都计入自由选修，因为限选会单独表明，这两者之和才和选修总分吻合
+        if (r.id == CourseRank.FreeSelective || r.id == CourseRank.Selective) {
           results.addOne(cs)
         }
       }

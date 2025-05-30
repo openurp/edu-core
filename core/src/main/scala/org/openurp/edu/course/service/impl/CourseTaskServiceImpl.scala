@@ -33,7 +33,7 @@ class CourseTaskServiceImpl extends CourseTaskService {
 
   var entityDao: EntityDao = _
 
-  override def statTask(project: Project, semester: Semester): Int = {
+  override def initTask(project: Project, semester: Semester): Int = {
     val builder = OqlBuilder.from[Array[Any]](classOf[Clazz].getName, "clazz")
     builder.where("clazz.semester=:semester and clazz.project=:project", semester, project)
     builder.join("clazz.teachers", "teacher")
@@ -127,6 +127,61 @@ class CourseTaskServiceImpl extends CourseTaskService {
     entityDao.search(q).headOption
   }
 
+  override def getOrCreateTask(semester: Semester, course: Course, teacher: Teacher): Option[CourseTask] = {
+    val q = OqlBuilder.from(classOf[CourseTask], "c")
+    q.where("c.course=:course", course)
+    q.where("c.semester=:semester", semester)
+    //同学期相同代码的修订任务
+    val tasks = entityDao.search(q)
+
+    val task =
+      if tasks.isEmpty then createTask(semester, course)
+      else {
+        //查找包含自身的任务
+        var myTask = tasks.find(_.teachers.contains(teacher))
+        //如果没有我的修订任务，但是又有代课，则直接添加进去
+        if (myTask.isEmpty && hasClazz(semester, course, teacher)) {
+          tasks.head.teachers.add(teacher)
+          entityDao.saveOrUpdate(tasks)
+          myTask = tasks.headOption
+        }
+        myTask
+      }
+
+
+    task foreach { t =>
+      if (!t.confirmed) { //对于没有确认的修订任务
+        //自我推荐为负责人
+        if (t.director.isEmpty && t.teachers.size == 1 && t.teachers.contains(teacher)) {
+          //从默认课程负责人中查找教研室
+          if (t.office.isEmpty) {
+            entityDao.findBy(classOf[CourseDirector], "course", course) foreach { cd =>
+              t.office = cd.office
+            }
+          }
+          t.director = Some(teacher)
+          entityDao.saveOrUpdate(t)
+        }
+      }
+    }
+    task
+  }
+
+  private def createTask(semester: Semester, course: Course): Option[CourseTask] = {
+    val cq = OqlBuilder.from(classOf[Clazz], "clazz")
+    cq.where("clazz.project=:project and clazz.course=:course and clazz.semester=:semester", course.project, course, semester)
+    val clazzes = entityDao.search(cq)
+    if (clazzes.isEmpty) {
+      None
+    } else {
+      val teachers = clazzes.flatMap(_.teachers).toSet
+      val task = new CourseTask(course, course.department, semester, clazzes.head.courseType)
+      task.teachers.addAll(teachers)
+      entityDao.saveOrUpdate(task)
+      Some(task)
+    }
+  }
+
   def getDirector(semester: Semester, course: Course, depart: Department): Option[User] = {
     val q = OqlBuilder.from(classOf[CourseTask], "ct")
     q.where("ct.course=:course and ct.department=:department", course, depart)
@@ -163,4 +218,19 @@ class CourseTaskServiceImpl extends CourseTaskService {
     tasks.headOption.flatMap(_.office)
   }
 
+  /** 查询个人的是否带某课的教学任务
+   *
+   * @param semester
+   * @param course
+   * @param teacher
+   * @return
+   */
+  private def hasClazz(semester: Semester, course: Course, teacher: Teacher): Boolean = {
+    val q = OqlBuilder.from(classOf[Clazz], "clazz")
+    q.where("clazz.project=:project", course.project)
+    q.where("clazz.course=:course", course)
+    q.where("clazz.semester=:semester", semester)
+    q.where(":teacher in elements(clazz.teachers)", teacher)
+    entityDao.search(q).nonEmpty
+  }
 }

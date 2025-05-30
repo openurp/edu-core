@@ -22,9 +22,11 @@ import org.openurp.base.hr.model.Teacher
 import org.openurp.base.model.{Department, Project, Semester, User}
 import org.openurp.edu.course.model.CourseTask
 
+/** 修订任务服务
+ */
 trait CourseTaskService {
 
-  def statTask(project: Project, semester: Semester): Int
+  def initTask(project: Project, semester: Semester): Int
 
   def isDirector(course: Course, teacher: Teacher): Boolean
 
@@ -37,4 +39,13 @@ trait CourseTaskService {
   def getTasks(project: Project, semester: Semester, teacher: Teacher): Seq[CourseTask]
 
   def getTask(semester: Semester, course: Course, teacher: Teacher): Option[CourseTask]
+
+  /** 查询教师相关的修订任务
+   *
+   * @param semester
+   * @param course
+   * @param teacher
+   * @return
+   */
+  def getOrCreateTask(semester: Semester, course: Course, teacher: Teacher): Option[CourseTask]
 }
