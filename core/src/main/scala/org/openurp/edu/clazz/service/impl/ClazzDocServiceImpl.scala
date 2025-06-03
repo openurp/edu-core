@@ -23,7 +23,6 @@ import org.beangle.security.Securities
 import org.openurp.base.model.User
 import org.openurp.edu.clazz.model.*
 import org.openurp.edu.clazz.service.ClazzDocService
-import org.openurp.edu.textbook.model.ClazzMaterial
 
 import java.io.InputStream
 import java.time.Instant
