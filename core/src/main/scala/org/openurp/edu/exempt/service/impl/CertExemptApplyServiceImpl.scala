@@ -59,7 +59,7 @@ class CertExemptApplyServiceImpl extends CertExemptApplyService {
     val query = OqlBuilder.from(classOf[CertificateGrade], "cg")
     query.where("cg.std = :std", apply.std)
     query.where("cg.certificate = :certificate", apply.certificate)
-    query.where("cg.acquiredOn = :acquiredOn", apply.acquiredOn)
+    query.where("cg.acquiredIn = :acquiredIn", apply.acquiredIn)
     val grades = entityDao.search(query)
 
     val grade = grades.headOption match {
@@ -67,7 +67,7 @@ class CertExemptApplyServiceImpl extends CertExemptApplyService {
         val g = new CertificateGrade
         g.std = apply.std
         g.certificate = apply.certificate
-        g.acquiredOn = apply.acquiredOn
+        g.acquiredIn = apply.acquiredIn
         g
       case Some(g) => g
     }
@@ -76,7 +76,7 @@ class CertExemptApplyServiceImpl extends CertExemptApplyService {
     if (Numbers.isDigits(apply.scoreText)) {
       grade.score = Some(Numbers.toFloat(apply.scoreText))
     }
-    grade.semester = semesterService.get(apply.std.project, apply.acquiredOn.atDay(1))
+    grade.semester = semesterService.get(apply.std.project, apply.acquiredIn.atDay(1))
     if (grade.semester == null) grade.semester = apply.semester
 
     grade.passed = true

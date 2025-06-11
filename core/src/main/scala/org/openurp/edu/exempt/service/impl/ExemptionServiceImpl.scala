@@ -131,7 +131,7 @@ class ExemptionServiceImpl extends ExemptionService {
   override def addExemption(eg: ExternGrade, courses: Iterable[Course], score: Option[Float]): Unit = {
     val remark = eg.externStudent.school.name + " " + eg.courseName + " " + eg.scoreText
     val std = eg.externStudent.std
-    addCourseGrades(std, courses, s"${eg.id}@ExternGrade", Some(eg.acquiredOn), score, remark)
+    addCourseGrades(std, courses, s"${eg.id}@ExternGrade", Some(eg.acquiredIn), score, remark)
     val emptyCourses = eg.exempts filter (x => getExemptionGrades(std, x).isEmpty)
     eg.exempts.subtractAll(emptyCourses)
     eg.exempts ++= courses
