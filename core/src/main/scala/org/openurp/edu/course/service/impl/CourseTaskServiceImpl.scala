@@ -189,7 +189,10 @@ class CourseTaskServiceImpl extends CourseTaskService {
     val tasks = entityDao.search(q)
     var director = tasks.headOption.flatMap(_.director)
     if (director.isEmpty) {
-      director = entityDao.findBy(classOf[CourseDirector], "course", course).headOption.flatMap(_.director)
+      val dq = OqlBuilder.from(classOf[CourseDirector], "cd")
+      dq.where("cd.course=:course", course)
+      dq.where("cd.beginOn <= :endOn and (cd.endOn is null or cd.endOn >= :beginOn)", semester.endOn, semester.beginOn)
+      director = entityDao.search(dq).headOption.map(_.director)
     }
     director match
       case None => None
