@@ -19,6 +19,7 @@ package org.openurp.edu.grade.service.impl
 
 import org.beangle.commons.lang.Numbers
 import org.beangle.data.dao.EntityDao
+import org.openurp.base.model.Project
 import org.openurp.base.service.ProjectConfigService
 import org.openurp.base.std.model.Student
 import org.openurp.code.edu.model.{CourseTakeType, ExamStatus, GradeType, GradingMode}
@@ -348,13 +349,17 @@ class DefaultCourseGradeCalculator extends CourseGradeCalculator {
   private def addDelta(gaGrade: GaGrade, score: Option[Float], state: CourseGradeState): Option[Float] = {
     if (score.isEmpty) return None
     val delta = getDelta(gaGrade, score, state)
-    val ga = reserve(delta + score.get, state)
+    val project = gaGrade.courseGrade.project
+    val ga = reserve(project, delta + score.get, state)
     gaGrade.score = Some(ga)
     gaGrade.score
   }
 
-  protected def reserve(score: Float, state: CourseGradeState): Float = {
-    Numbers.round(score.toDouble, if null == state then 0 else state.scorePrecision).toFloat
+  protected def reserve(project: Project, score: Float, state: CourseGradeState): Float = {
+    Numbers.round(score.toDouble, if null == state then getDefaultScorePrecision(project) else state.scorePrecision).toFloat
   }
 
+  private def getDefaultScorePrecision(project: Project): Int = {
+    projectConfigService.getInt(project, Features.Grade.ScorePrecision)
+  }
 }
