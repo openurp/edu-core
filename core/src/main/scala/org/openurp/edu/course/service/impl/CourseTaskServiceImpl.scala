@@ -148,7 +148,6 @@ class CourseTaskServiceImpl extends CourseTaskService {
         myTask
       }
 
-
     task foreach { t =>
       if (!t.confirmed) { //对于没有确认的修订任务
         //自我推荐为负责人

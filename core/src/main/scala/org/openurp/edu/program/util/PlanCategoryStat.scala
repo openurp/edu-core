@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openurp.edu.program.service
+package org.openurp.edu.program.util
 
 import org.beangle.commons.collection.Collections
 import org.beangle.commons.logging.Logging
