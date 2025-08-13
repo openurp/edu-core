@@ -21,7 +21,6 @@ import org.beangle.commons.bean.Properties
 import org.beangle.commons.collection.Collections
 import org.beangle.commons.lang.{Numbers, Objects, Strings}
 import org.beangle.data.dao.EntityDao
-import org.beangle.data.orm.MappingMacro.target
 import org.openurp.base.edu.model.{Course, Terms}
 import org.openurp.code.edu.model.TeachingNature
 import org.openurp.code.service.CodeService
