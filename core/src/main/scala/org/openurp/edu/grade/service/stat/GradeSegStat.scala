@@ -34,7 +34,7 @@ object GradeSegStat {
     segments.toSeq
   }
 
-  def apply(gs: collection.Seq[Grade], gradeType: GradeType, segments: Seq[FloatSegment]): GradeSegStat = {
+  def apply(gs: collection.Seq[Grade], gradeType: GradeType, segments: Iterable[FloatSegment]): GradeSegStat = {
     val segs = segments.map(_.clone)
     var grades = gs
     if (!gradeType.isGa && gradeType.id > 0) {
@@ -47,9 +47,10 @@ object GradeSegStat {
     var sum = 0L
     var average = 0f
     grades foreach { grade =>
-      val score = grade.score.getOrElse(0f)
-      sum += (score * 100).intValue
-      segs.find(_.contains(score)).foreach { seg => seg.count += 1 }
+      grade.score foreach { score =>
+        sum += (score * 100).intValue
+        segs.find(_.contains(score)).foreach { seg => seg.count += 1 }
+      }
     }
     if 0 != stdCount then average = (BigDecimal(sum) / BigDecimal(stdCount * 100)).floatValue
     new GradeSegStat(gradeType, segs, stdCount, highest, lowest, average)
@@ -81,7 +82,7 @@ object GradeSegStat {
 /**
  * 成绩分段统计
  */
-class GradeSegStat(val gradeType: GradeType, val segments: Seq[FloatSegment], val stdCount: Int, val highest: Float, val lowest: Float, val average: Float) {
+class GradeSegStat(val gradeType: GradeType, val segments: Iterable[FloatSegment], val stdCount: Int, val highest: Float, val lowest: Float, val average: Float) {
 
   def getSegment(min: Number, max: Number): Option[FloatSegment] = {
     segments.find(x => x.min == min.floatValue && x.max == max.floatValue)

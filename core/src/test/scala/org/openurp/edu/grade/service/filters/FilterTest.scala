@@ -19,7 +19,7 @@ package org.openurp.edu.grade.service.filters
 
 import org.beangle.commons.collection.Collections
 import org.openurp.base.edu.model.Course
-import org.openurp.base.model.Semester
+import org.openurp.base.model.{SchoolYear, Semester}
 import org.openurp.base.std.model.Student
 import org.openurp.code.edu.model.{CourseTakeType, EducationLevel}
 import org.openurp.edu.grade.model.CourseGrade
@@ -37,10 +37,12 @@ class FilterTest extends AnyFunSpec with Matchers {
     val level = new EducationLevel
     std.level = level
 
+    val year = new SchoolYear
+    year.name = "2020-2021"
     val grades = Collections.newBuffer[CourseGrade]
     val courseTakeType = new CourseTakeType(1, "1", "初修", "Normal")
-    val semester1 = new Semester(1, "20201", "2020-2021", "1", LocalDate.parse("2020-09-01"), LocalDate.parse("2021-02-01"))
-    val semester2 = new Semester(2, "20202", "2020-2021", "2", LocalDate.parse("2021-03-01"), LocalDate.parse("2021-08-01"))
+    val semester1 = new Semester(1, "20201", year, "1", LocalDate.parse("2020-09-01"), LocalDate.parse("2021-02-01"))
+    val semester2 = new Semester(2, "20202", year, "2", LocalDate.parse("2021-03-01"), LocalDate.parse("2021-08-01"))
     val a = new Course(1, "A", "A", "A")
     val b = new Course(2, "B", "B", "B")
     val c = new Course(3, "C", "C", "C")
