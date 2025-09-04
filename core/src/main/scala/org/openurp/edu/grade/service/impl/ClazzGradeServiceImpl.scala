@@ -334,7 +334,7 @@ class ClazzGradeServiceImpl extends BaseServiceImpl with ClazzGradeService {
     gradeTypes foreach { gradeType =>
       if (!gradeType.isGa) {
         val egState = gradeState.getState(gradeType).asInstanceOf[ExamGradeState]
-        if (null == egState || egState.scorePercent.getOrElse(0) == 0) {
+        if (null == egState || egState.weight.getOrElse(0) == 0) {
           zeroPercentTypes.addOne(gradeType)
           gradeState.examStates.remove(egState)
         }

@@ -164,6 +164,7 @@ object AuditPlanResultMerger extends Logging {
       tar.predicted = src.predicted
       tar.taking = src.taking
       tar.passedWay = src.passedWay
+      tar.terms = src.terms
       tar.remark = src.remark
     }
   }
