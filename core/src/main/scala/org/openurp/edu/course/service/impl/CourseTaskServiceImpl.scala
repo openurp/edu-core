@@ -28,6 +28,7 @@ import org.openurp.edu.course.model.CourseTask
 import org.openurp.edu.course.service.CourseTaskService
 
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
 class CourseTaskServiceImpl extends CourseTaskService {
 
@@ -35,31 +36,29 @@ class CourseTaskServiceImpl extends CourseTaskService {
 
   override def initTask(project: Project, semester: Semester): Int = {
     val builder = OqlBuilder.from[Array[Any]](classOf[Clazz].getName, "clazz")
-    builder.where("clazz.semester=:semester and clazz.project=:project", semester, project)
+    builder.where("clazz.semester=:semester and clazz.project=:project and clazz.course.project=:project", semester, project)
     builder.join("clazz.teachers", "teacher")
-    builder.select("clazz.course,clazz.teachDepart,clazz.courseType,teacher")
+    builder.select("clazz.course,clazz.courseType,teacher")
     val allTasks = entityDao.search(builder)
-    val allTasksMap = Collections.newMap[(Course, Department), mutable.Map[CourseType, mutable.Set[Teacher]]]
+    val allTasksMap = Collections.newMap[Course, mutable.Map[CourseType, mutable.Set[Teacher]]]
     allTasks foreach { d =>
       val course = d(0).asInstanceOf[Course]
-      val depart = d(1).asInstanceOf[Department]
-      val courseType = d(2).asInstanceOf[CourseType]
-      val teacher = d(3).asInstanceOf[Teacher]
-      val task = allTasksMap.getOrElseUpdate((course, depart), mutable.Map[CourseType, mutable.Set[Teacher]]())
+      val courseType = d(1).asInstanceOf[CourseType]
+      val teacher = d(2).asInstanceOf[Teacher]
+      val task = allTasksMap.getOrElseUpdate(course, mutable.Map[CourseType, mutable.Set[Teacher]]())
       val ts = task.getOrElseUpdate(courseType, mutable.HashSet[Teacher]())
       ts += teacher
     }
 
     val builder2 = OqlBuilder.from[Array[Any]](classOf[Clazz].getName, "clazz")
-    builder2.where("clazz.semester=:semester and clazz.project=:project", semester, project)
+    builder2.where("clazz.semester=:semester and clazz.project=:project and clazz.course.project=:project", semester, project)
     builder2.where("size(clazz.teachers)=0")
-    builder2.select("clazz.course,clazz.teachDepart,clazz.courseType")
+    builder2.select("clazz.course,clazz.courseType")
     val allTasks2 = entityDao.search(builder2)
     allTasks2 foreach { d =>
       val course = d(0).asInstanceOf[Course]
-      val depart = d(1).asInstanceOf[Department]
-      val courseType = d(2).asInstanceOf[CourseType]
-      val task = allTasksMap.getOrElseUpdate((course, depart), mutable.Map[CourseType, mutable.Set[Teacher]]())
+      val courseType = d(1).asInstanceOf[CourseType]
+      val task = allTasksMap.getOrElseUpdate(course, mutable.Map[CourseType, mutable.Set[Teacher]]())
       task.getOrElseUpdate(courseType, mutable.HashSet[Teacher]())
     }
 
@@ -67,13 +66,14 @@ class CourseTaskServiceImpl extends CourseTaskService {
     val q = OqlBuilder.from(classOf[CourseTask], "task")
     q.where("task.course.project=:project and task.semester=:semester", project, semester)
     val existTasks = entityDao.search(q)
-    val existMap = Collections.newMap[(Course, Department), CourseTask]
+    val existMap = Collections.newMap[Course, mutable.Buffer[CourseTask]]
     existTasks foreach { t =>
-      existMap.getOrElseUpdate((t.course, t.department), t)
+      val ts = existMap.getOrElseUpdate(t.course, new ArrayBuffer[CourseTask]())
+      ts.addOne(t)
     }
 
     var total = 0
-    allTasksMap foreach { case ((course, depart), taskMap) =>
+    allTasksMap foreach { case (course, taskMap) =>
       var courseType = taskMap.head._1
       var teacherCnt = taskMap.head._2.size
       val teachers = Collections.newSet[Teacher]
@@ -84,17 +84,40 @@ class CourseTaskServiceImpl extends CourseTaskService {
         }
         teachers ++= t._2
       }
-      val task = existMap.getOrElse((course, depart), new CourseTask(course, depart, semester, courseType))
-      if (!task.confirmed) {
-        task.courseType = courseType
-        task.teachers.clear()
-        task.teachers ++= teachers
-        if (!task.persisted) total += 1
-        entityDao.saveOrUpdate(task)
+      val tasks = existMap.getOrElse(course, new mutable.ArrayBuffer[CourseTask])
+
+      val depart = course.getJournal(semester).department
+
+      if (tasks.isEmpty) {
+        val nt = new CourseTask(course, depart, semester, courseType)
+        if (updateTask(nt, courseType, depart, teachers)) total += 1
+      } else {
+        tasks.find(!_.confirmed) foreach { t =>
+          updateTask(t, courseType, depart, teachers)
+        }
+        entityDao.remove(tasks.filter(x => x.department != depart))
       }
     }
-    entityDao.remove(existTasks.filter(t => !allTasksMap.contains(t.course, t.department)))
+    entityDao.remove(existTasks.filter(t => !allTasksMap.contains(t.course)))
     total
+  }
+
+  /** 更新修订任务
+   *
+   * @param task
+   * @param courseType
+   * @param department
+   * @param teachers
+   * @return
+   */
+  private def updateTask(task: CourseTask, courseType: CourseType, department: Department, teachers: Iterable[Teacher]): Boolean = {
+    task.courseType = courseType
+    task.department = department
+    task.teachers.clear()
+    task.teachers ++= teachers
+    val newer = !task.persisted
+    entityDao.saveOrUpdate(task)
+    newer
   }
 
   override def isDirector(course: Course, teacher: Teacher): Boolean = {
