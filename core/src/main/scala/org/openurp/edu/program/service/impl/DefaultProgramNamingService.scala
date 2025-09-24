@@ -18,7 +18,7 @@
 package org.openurp.edu.program.service.impl
 
 import org.beangle.data.dao.EntityDao
-import org.openurp.base.edu.model.{Direction, Major}
+import org.openurp.base.edu.model.{Major, MajorDirection}
 import org.openurp.base.std.model.Grade
 import org.openurp.edu.program.model.Program
 import org.openurp.edu.program.service.ProgramNamingService
@@ -39,7 +39,7 @@ class DefaultProgramNamingService extends ProgramNamingService {
     //fetch database object to avoid entity only contain id.
     val grade = entityDao.get(classOf[Grade], program.grade.id)
     val major = entityDao.get(classOf[Major], program.major.id)
-    val direction = program.direction.map(d => entityDao.get(classOf[Direction], d.id))
+    val direction = program.direction.map(d => entityDao.get(classOf[MajorDirection], d.id))
 
     val gradeCode = grade.code
     val majorName = major.name

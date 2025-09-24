@@ -38,7 +38,8 @@ class BestGpaStatService extends GpaStatService {
   }
 
   private def merge(target: StdGpa, source: StdGpa): Unit = {
-    target.ga = source.ga
+    target.wms = source.wms
+    target.ams = source.ams
     target.gpa = source.gpa
     target.gradeCount = source.gradeCount
     target.credits = source.credits
@@ -52,7 +53,8 @@ class BestGpaStatService extends GpaStatService {
           source.semesterGpas -= sourceTerm
           target.add(sourceTerm)
         case Some(targetTerm) =>
-          targetTerm.ga = sourceTerm.ga
+          targetTerm.wms = sourceTerm.wms
+          targetTerm.ams = sourceTerm.ams
           targetTerm.gpa = sourceTerm.gpa
           targetTerm.gradeCount = sourceTerm.gradeCount
           targetTerm.credits = sourceTerm.credits
@@ -73,7 +75,8 @@ class BestGpaStatService extends GpaStatService {
           source.yearGpas -= sourceTerm
           target.add(sourceTerm)
         case Some(targetTerm) =>
-          targetTerm.ga = sourceTerm.ga
+          targetTerm.wms = sourceTerm.wms
+          targetTerm.ams = sourceTerm.ams
           targetTerm.gpa = sourceTerm.gpa
           targetTerm.gradeCount = sourceTerm.gradeCount
           targetTerm.credits = sourceTerm.credits
@@ -106,7 +109,8 @@ class BestGpaStatService extends GpaStatService {
     stdGpa.gradeCount = stdGpa2.gradeCount
     stdGpa.credits = stdGpa2.credits
     stdGpa.totalCredits = stdGpa2.totalCredits
-    stdGpa.ga = stdGpa2.ga
+    stdGpa.wms = stdGpa2.wms
+    stdGpa.ams = stdGpa2.ams
     stdGpa.gpa = stdGpa2.gpa
     stdGpa
   }
