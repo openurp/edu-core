@@ -18,11 +18,10 @@
 package org.openurp.edu.grade.app.service.impl
 
 import org.beangle.data.dao.OqlBuilder
-import org.openurp.edu.grade.BaseServiceImpl
 import org.openurp.edu.grade.app.model.GradeModifyApply
 import org.openurp.edu.grade.app.service.GradeModifyApplyService
-import org.openurp.edu.grade.model.CourseGrade
-import org.openurp.edu.grade.model.ExamGrade
+import org.openurp.edu.grade.model.{CourseGrade, ExamGrade}
+import org.openurp.edu.grade.service.BaseServiceImpl
 
 class GradeModifyApplyServiceImpl extends BaseServiceImpl with GradeModifyApplyService {
 

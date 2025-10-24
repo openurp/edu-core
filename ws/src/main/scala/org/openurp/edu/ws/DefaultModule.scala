@@ -19,7 +19,7 @@ package org.openurp.edu.ws
 
 import org.beangle.commons.cdi.BindModule
 import org.openurp.base.service.impl.{ProjectConfigServiceImpl, SemesterServiceImpl}
-import org.openurp.edu.ws.grade.AutoAuditJob
+import org.openurp.edu.grade.service.{AutoAuditPlanJob, AutoGpaStatJob}
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler
 import org.springframework.scheduling.config.{CronTask, ScheduledTaskRegistrar}
 
@@ -30,8 +30,12 @@ class DefaultModule extends BindModule {
     bind(classOf[ProjectConfigServiceImpl])
     bind(classOf[ConcurrentTaskScheduler])
     bind(classOf[ScheduledTaskRegistrar]).nowire("triggerTasks", "triggerTasksList")
-    bind(classOf[AutoAuditJob]).lazyInit(false)
-    bindTask(classOf[AutoAuditJob], "0 0 7,9,11,13,15,17,19,21,23 * * *") //every two hours
+
+    bind(classOf[AutoAuditPlanJob]).lazyInit(false)
+    bindTask(classOf[AutoAuditPlanJob], "0 0 7,9,11,13,15,17,19,21,23 * * *") //every two hours
+
+    bind(classOf[AutoGpaStatJob]).lazyInit(false)
+    bindTask(classOf[AutoGpaStatJob], "0 27 7,9,11,13,15,17,19,20,23 * * *") //every two hours
   }
 
   protected def bindTask[T <: Runnable](clazz: Class[T], expression: String): Unit = {

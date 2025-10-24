@@ -24,13 +24,12 @@ import org.openurp.base.model.Project
 import org.openurp.base.service.ProjectConfigService
 import org.openurp.code.edu.model.{CourseTakeType, ExamStatus, GradeType}
 import org.openurp.code.service.CodeService
-import org.openurp.edu.grade.BaseServiceImpl
 import org.openurp.edu.grade.service.impl.CourseGradeSettingsImpl.*
-import org.openurp.edu.grade.service.{CourseGradeSetting, CourseGradeSettings}
+import org.openurp.edu.grade.service.{BaseServiceImpl, CourseGradeSetting, CourseGradeSettings}
 
 import java.util as ju
 
-class CourseGradeSettingsImpl extends BaseServiceImpl with CourseGradeSettings {
+class CourseGradeSettingsImpl extends BaseServiceImpl, CourseGradeSettings {
 
   var codeService: CodeService = _
 

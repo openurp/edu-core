@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openurp.edu.grade
+package org.openurp.edu.grade.service
 
 import org.beangle.commons.event.{Event, EventMulticaster}
 import org.beangle.commons.logging.Logging

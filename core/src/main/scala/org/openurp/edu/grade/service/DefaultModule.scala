@@ -18,7 +18,7 @@
 package org.openurp.edu.grade.service
 
 import org.beangle.commons.cdi.BindModule
-import org.openurp.edu.grade.domain.{DefaultCourseGradeProvider, DefaultGpaPolicy}
+import org.openurp.edu.grade.domain.DefaultCourseGradeProvider
 import org.openurp.edu.grade.service.filters.{BestGradeFilter, BestOriginGradeFilter, MakeupGradeFilter, ScriptGradeFilter}
 import org.openurp.edu.grade.service.impl.*
 import org.openurp.edu.program.domain.DefaultAlternativeCourseProvider
@@ -26,26 +26,28 @@ import org.openurp.edu.program.domain.DefaultAlternativeCourseProvider
 class DefaultModule extends BindModule {
 
   protected override def binding(): Unit = {
-    bind("bestGradeCourseGradeProvider", classOf[BestCourseGradeProviderImpl])
     bind(classOf[CourseGradeSettingsImpl])
 
-    bind("bestGradeFilter", classOf[BestGradeFilter])
-    bind("gpaPolicy", classOf[DefaultGpaPolicy])
+    bind("bestGradeCourseGradeProvider", classOf[BestCourseGradeProviderImpl])
     bind("bestOriginGradeFilter", classOf[BestOriginGradeFilter])
-    bind("gradeFilterRegistry", classOf[SpringGradeFilterRegistry])
+    bind("bestGradeFilter", classOf[BestGradeFilter])
+
     bind("clazzGradeService", classOf[ClazzGradeServiceImpl])
     bind("gradeInputSwithService", classOf[GradeInputSwithServiceImpl])
 
+    bind("gradeFilterRegistry", classOf[SpringGradeFilterRegistry])
+    bind("makeupGradeFilter", classOf[MakeupGradeFilter])
     bind("scriptGradeFilter", classOf[ScriptGradeFilter])
+
     bind("courseGradeProvider", classOf[DefaultCourseGradeProvider])
     bind("courseGradeCalculator", classOf[DefaultCourseGradeCalculator])
     bind("gpaService", classOf[DefaultGpaService])
-    bind("bestGpaStatService", classOf[BestGpaStatService])
+
     bind("makeupStdStrategy", classOf[MakeupByExamStrategy])
     bind("gradingModeHelper", classOf[GradingModeHelper])
     bind("gradingModeStrategy", classOf[DefaultGradingModeStrategy])
     bind("stdGradeService", classOf[StdGradeServiceImpl])
-    bind("makeupGradeFilter", classOf[MakeupGradeFilter])
+
     bind("recalcGpPublishListener", classOf[RecalcGpPublishListener])
     bind("examTakerGeneratePublishListener", classOf[ExamTakerGeneratePublishListener])
     bind("courseGradePublishStack", classOf[CourseGradePublishStack])

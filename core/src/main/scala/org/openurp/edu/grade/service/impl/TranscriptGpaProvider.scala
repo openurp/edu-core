@@ -19,7 +19,7 @@ package org.openurp.edu.grade.service.impl
 
 import org.beangle.commons.collection.Collections
 import org.openurp.base.std.model.Student
-import org.openurp.edu.grade.domain.{CourseGradeProvider, GpaPolicy, GradeFilter}
+import org.openurp.edu.grade.domain.{CourseGradeProvider, GpaCalculator, GradeFilter}
 import org.openurp.edu.grade.model.{CourseGrade, StdGpa}
 import org.openurp.edu.grade.service.TranscriptDataProvider
 import org.openurp.edu.grade.service.impl.GradeFilterRegistry
@@ -33,8 +33,6 @@ class TranscriptGpaProvider extends TranscriptDataProvider {
 
   var courseGradeProvider: CourseGradeProvider = _
 
-  var gpaPolicy: GpaPolicy = _
-
   var gradeFilterRegistry: GradeFilterRegistry = _
 
   def dataName: String = "gpas"
@@ -43,9 +41,9 @@ class TranscriptGpaProvider extends TranscriptDataProvider {
     val matched = getFilters(options)
     val datas = Collections.newMap[Student, StdGpa]
     for (std <- stds) {
-      var grades: Iterable[CourseGrade] = courseGradeProvider.getPublished(std)
+      var grades: Iterable[CourseGrade] = courseGradeProvider.get(std)
       for (filter <- matched) grades = filter.filter(grades)
-      datas.put(std, gpaPolicy.calc(std, grades, true))
+      datas.put(std, new GpaCalculator().calc(std, grades, true))
     }
     datas
   }

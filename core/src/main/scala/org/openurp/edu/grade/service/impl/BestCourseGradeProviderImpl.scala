@@ -27,13 +27,9 @@ class BestCourseGradeProviderImpl extends DefaultCourseGradeProvider {
 
   var bestGradeFilter: BestGradeFilter = _
 
-  override def getPublished(std: Student, semesters: Iterable[Semester]): Seq[CourseGrade] = {
-    val grades = super.getPublished(std, semesters)
+  override def get(std: Student, semesters: Iterable[Semester]): Seq[CourseGrade] = {
+    val grades = super.get(std, semesters)
     bestGradeFilter.filter(grades).toSeq
   }
 
-  override def getAll(std: Student, semesters: Iterable[Semester]): Seq[CourseGrade] = {
-    val grades = getAll(std, semesters)
-    bestGradeFilter.filter(grades).toSeq
-  }
 }

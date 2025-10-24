@@ -19,12 +19,11 @@ package org.openurp.edu.grade.service.impl
 
 import org.beangle.commons.collection.Collections
 import org.openurp.base.std.model.Student
-import org.openurp.edu.grade.BaseServiceImpl
-import org.openurp.edu.grade.service.TranscriptDataProvider
+import org.openurp.edu.grade.service.{BaseServiceImpl, TranscriptDataProvider}
 import org.openurp.edu.program.domain.CoursePlanProvider
 import org.openurp.edu.program.model.PlanCourse
 
-class TranscriptPlanCourseProvider extends BaseServiceImpl with TranscriptDataProvider {
+class TranscriptPlanCourseProvider extends BaseServiceImpl, TranscriptDataProvider {
 
   var coursePlanProvider: CoursePlanProvider = _
 

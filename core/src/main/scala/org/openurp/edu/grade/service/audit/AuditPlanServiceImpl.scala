@@ -51,7 +51,7 @@ class AuditPlanServiceImpl extends DefaultPlanAuditor, AuditPlanService, Logging
     logger.debug("start audit " + std.code)
     val coursePlan = coursePlanProvider.getCoursePlan(std).orNull
     val sharePlan = coursePlanProvider.getSharePlan(std)
-    val stdGrade = new StdGrade(courseGradeProvider.getPublished(std))
+    val stdGrade = new StdGrade(courseGradeProvider.get(std))
     val projectListeners = listeners.get(std.project.id) match
       case None =>
         val s = projectConfigService.get[String](std.project, Features.Grade.AuditPlanRules)

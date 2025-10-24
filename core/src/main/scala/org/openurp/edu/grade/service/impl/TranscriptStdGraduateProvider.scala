@@ -20,14 +20,12 @@ package org.openurp.edu.grade.service.impl
 import org.beangle.commons.collection.Collections
 import org.beangle.data.dao.OqlBuilder
 import org.openurp.base.std.model.{Graduate, Student}
-import org.openurp.edu.grade.BaseServiceImpl
-import org.openurp.edu.grade.service.TranscriptDataProvider
+import org.openurp.edu.grade.service.{BaseServiceImpl, TranscriptDataProvider}
 
 import scala.collection.mutable.Buffer
 
 /**
  * 毕业信息提供者
- *
  *
  * @since 2012-06-07
  */

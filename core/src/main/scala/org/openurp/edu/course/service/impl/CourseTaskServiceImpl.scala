@@ -204,26 +204,9 @@ class CourseTaskServiceImpl extends CourseTaskService {
     }
   }
 
-  def getDirector(semester: Semester, course: Course, depart: Department): Option[User] = {
+  override def getDirector(semester: Semester, course: Course): Option[User] = {
     val q = OqlBuilder.from(classOf[CourseTask], "ct")
-    q.where("ct.course=:course and ct.department=:department", course, depart)
-    q.where("ct.semester=:semester", semester)
-    val tasks = entityDao.search(q)
-    var director = tasks.headOption.flatMap(_.director)
-    if (director.isEmpty) {
-      val dq = OqlBuilder.from(classOf[CourseDirector], "cd")
-      dq.where("cd.course=:course", course)
-      dq.where("cd.beginOn <= :endOn and (cd.endOn is null or cd.endOn >= :beginOn)", semester.endOn, semester.beginOn)
-      director = entityDao.search(dq).headOption.map(_.director)
-    }
-    director match
-      case None => None
-      case Some(d) => entityDao.findBy(classOf[User], "code", d.code).headOption
-  }
-
-  override def getOfficeDirector(semester: Semester, course: Course, depart: Department): Option[User] = {
-    val q = OqlBuilder.from(classOf[CourseTask], "ct")
-    q.where("ct.course=:course and ct.department=:department", course, depart)
+    q.where("ct.course=:course", course)
     q.where("ct.semester=:semester", semester)
     val tasks = entityDao.search(q)
     var director = tasks.headOption.flatMap(_.office.flatMap(_.director))
@@ -235,9 +218,9 @@ class CourseTaskServiceImpl extends CourseTaskService {
       case Some(d) => entityDao.findBy(classOf[User], "code", d.code).headOption
   }
 
-  override def getOffice(semester: Semester, course: Course, depart: Department): Option[TeachingOffice] = {
+  override def getOffice(semester: Semester, course: Course): Option[TeachingOffice] = {
     val q = OqlBuilder.from(classOf[CourseTask], "ct")
-    q.where("ct.course=:course and ct.department=:department", course, depart)
+    q.where("ct.course=:course", course)
     q.where("ct.semester=:semester", semester)
     val tasks = entityDao.search(q)
     tasks.headOption.flatMap(_.office)

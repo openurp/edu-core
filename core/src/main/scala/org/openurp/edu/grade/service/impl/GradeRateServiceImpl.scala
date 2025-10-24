@@ -17,16 +17,13 @@
 
 package org.openurp.edu.grade.service.impl
 
-import org.beangle.data.dao.OqlBuilder
-import org.beangle.commons.script.ExpressionEvaluator
-import org.openurp.code.edu.model.GradingMode
-import org.openurp.base.model.Project
-import org.openurp.edu.grade.config.GradeRateConfig
-import org.openurp.edu.grade.config.GradeRateItem
-import org.openurp.edu.grade.service.GradeRateService
-import org.openurp.edu.grade.service.ScoreConverter
 import org.beangle.commons.collection.Collections
-import org.openurp.edu.grade.BaseServiceImpl
+import org.beangle.commons.script.ExpressionEvaluator
+import org.beangle.data.dao.OqlBuilder
+import org.openurp.base.model.Project
+import org.openurp.code.edu.model.GradingMode
+import org.openurp.edu.grade.config.{GradeRateConfig, GradeRateItem}
+import org.openurp.edu.grade.service.{BaseServiceImpl, GradeRateService, ScoreConverter}
 
 class GradeRateServiceImpl extends BaseServiceImpl with GradeRateService {
 

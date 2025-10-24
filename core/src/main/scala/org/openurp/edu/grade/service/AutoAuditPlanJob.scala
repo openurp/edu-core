@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openurp.edu.ws.grade
+package org.openurp.edu.grade.service
 
 import org.beangle.commons.lang.time.Stopwatch
 import org.beangle.commons.logging.Logging
@@ -29,7 +29,9 @@ import org.openurp.edu.service.Features
 
 import java.time.LocalDate
 
-class AutoAuditJob extends DaoJob, Logging {
+/** 自动审核计划完成情况
+ */
+class AutoAuditPlanJob extends DaoJob, Logging {
   var auditPlanService: AuditPlanService = _
   var projectConfigService: ProjectConfigService = _
 

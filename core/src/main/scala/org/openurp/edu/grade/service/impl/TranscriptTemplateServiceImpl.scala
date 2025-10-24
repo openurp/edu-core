@@ -19,11 +19,10 @@ package org.openurp.edu.grade.service.impl
 
 import org.beangle.data.dao.OqlBuilder
 import org.openurp.base.model.Project
-import org.openurp.edu.grade.BaseServiceImpl
 import org.openurp.edu.grade.config.TranscriptTemplate
-import org.openurp.edu.grade.service.TranscriptTemplateService
+import org.openurp.edu.grade.service.{BaseServiceImpl, TranscriptTemplateService}
 
-class TranscriptTemplateServiceImpl extends BaseServiceImpl with TranscriptTemplateService {
+class TranscriptTemplateServiceImpl extends BaseServiceImpl, TranscriptTemplateService {
 
   def getTemplate(project: Project, code: String): TranscriptTemplate = {
     val builder = OqlBuilder.from(classOf[TranscriptTemplate], "rt")

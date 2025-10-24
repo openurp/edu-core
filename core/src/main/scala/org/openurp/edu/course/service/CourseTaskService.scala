@@ -32,9 +32,9 @@ trait CourseTaskService {
 
   def isDirector(semester: Semester, course: Course, teacher: Teacher): Boolean
 
-  def getOffice(semester: Semester, course: Course, depart: Department): Option[TeachingOffice]
+  def getOffice(semester: Semester, course: Course): Option[TeachingOffice]
 
-  def getOfficeDirector(semester: Semester, course: Course, depart: Department): Option[User]
+  def getDirector(semester: Semester, course: Course): Option[User]
 
   def getTasks(project: Project, semester: Semester, teacher: Teacher): Seq[CourseTask]
 

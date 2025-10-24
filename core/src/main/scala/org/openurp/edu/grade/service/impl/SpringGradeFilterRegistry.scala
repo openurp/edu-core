@@ -27,7 +27,7 @@ import org.springframework.context.{ApplicationContext, ApplicationContextAware}
  * 基于spring的过滤器注册表
  *
  */
-class SpringGradeFilterRegistry extends GradeFilterRegistry with ApplicationContextAware with Initializing {
+class SpringGradeFilterRegistry extends GradeFilterRegistry, ApplicationContextAware, Initializing {
 
   val filters = Collections.newMap[String, GradeFilter]
 
@@ -54,6 +54,19 @@ class SpringGradeFilterRegistry extends GradeFilterRegistry with ApplicationCont
   def getFilters(name: String): Seq[GradeFilter] = {
     if (Strings.isBlank(name)) return List.empty
     val filterNames = Strings.split(name, Array('|', ','))
-    filterNames.map(x => filters.get(x)).flatten.toSeq
+    filterNames.flatMap { x => filters.get(normalizeFilterName(x)) }.toSeq
+  }
+
+  /** 强制所有的成绩过滤器需要添加GradeFilter后缀
+   *
+   * @param name
+   * @return
+   */
+  private def normalizeFilterName(name: String): String = {
+    if (name.endsWith("GradeFilter")) {
+      name
+    } else {
+      name + "GradeFilter"
+    }
   }
 }

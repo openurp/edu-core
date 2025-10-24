@@ -40,20 +40,24 @@ object GradeSegStat {
     if (!gradeType.isGa && gradeType.id > 0) {
       grades = gs.filter(x => x.asInstanceOf[ExamGrade].examStatus.attended)
     }
-    val stdCount = grades.size
-    grades = grades.sortBy(_.score.getOrElse(0f))
-    val lowest = grades.head.score.getOrElse(0f)
-    val highest = grades.last.score.getOrElse(0f)
-    var sum = 0L
-    var average = 0f
-    grades foreach { grade =>
-      grade.score foreach { score =>
-        sum += (score * 100).intValue
-        segs.find(_.contains(score)).foreach { seg => seg.count += 1 }
+    if (grades.isEmpty) {
+      new GradeSegStat(gradeType, segs, 0, 0, 0, 0)
+    } else {
+      val stdCount = grades.size
+      grades = grades.sortBy(_.score.getOrElse(0f))
+      val lowest = grades.head.score.getOrElse(0f)
+      val highest = grades.last.score.getOrElse(0f)
+      var sum = 0L
+      var average = 0f
+      grades foreach { grade =>
+        grade.score foreach { score =>
+          sum += (score * 100).intValue
+          segs.find(_.contains(score)).foreach { seg => seg.count += 1 }
+        }
       }
+      if 0 != stdCount then average = (BigDecimal(sum) / BigDecimal(stdCount * 100)).floatValue
+      new GradeSegStat(gradeType, segs, stdCount, highest, lowest, average)
     }
-    if 0 != stdCount then average = (BigDecimal(sum) / BigDecimal(stdCount * 100)).floatValue
-    new GradeSegStat(gradeType, segs, stdCount, highest, lowest, average)
   }
 
   def stat(courseGrades: Iterable[CourseGrade], gradeTypes: Iterable[GradeType], segments: Seq[FloatSegment]): Seq[GradeSegStat] = {

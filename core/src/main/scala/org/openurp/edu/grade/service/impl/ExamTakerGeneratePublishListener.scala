@@ -24,10 +24,9 @@ import org.openurp.base.std.model.Student
 import org.openurp.code.edu.model.{ExamStatus, ExamType, GradeType}
 import org.openurp.edu.clazz.model.Clazz
 import org.openurp.edu.exam.model.ExamTaker
-import org.openurp.edu.grade.BaseServiceImpl
 import org.openurp.edu.grade.model.{CourseGrade, CourseGradeState, ExamGrade}
 import org.openurp.edu.grade.service.impl.ExamTakerGeneratePublishListener.*
-import org.openurp.edu.grade.service.{CourseGradePublishListener, CourseGradeSetting, CourseGradeSettings}
+import org.openurp.edu.grade.service.{BaseServiceImpl, CourseGradePublishListener, CourseGradeSetting, CourseGradeSettings}
 
 object ExamTakerGeneratePublishListener {
 

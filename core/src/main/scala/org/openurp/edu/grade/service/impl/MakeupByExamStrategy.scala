@@ -22,8 +22,7 @@ import org.beangle.data.dao.OqlBuilder
 import org.openurp.code.edu.model.{ExamType, GradeType}
 import org.openurp.edu.clazz.model.{Clazz, CourseTaker}
 import org.openurp.edu.exam.model.ExamTaker
-import org.openurp.edu.grade.BaseServiceImpl
-import org.openurp.edu.grade.service.MakeupStdStrategy
+import org.openurp.edu.grade.service.{BaseServiceImpl, MakeupStdStrategy}
 
 /**
  * 按照排考情况，统计补缓名单
