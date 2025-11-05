@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
-<cdi>
-  <container>
+<beangle>
+  <ems app-name="edu-ws"/>
+  <cdi>
     <module class="org.beangle.ems.app.cas.DefaultModule"/>
     <module class="org.openurp.edu.ws.schedule.DefaultModule"/>
     <module class="org.openurp.edu.ws.clazz.DefaultModule"/>
@@ -8,5 +9,13 @@
     <module class="org.openurp.edu.grade.service.DefaultModule" />
     <module class="org.openurp.edu.program.service.DefaultModule" />
     <module class="org.openurp.edu.grade.service.AuditModule" />
-  </container>
-</cdi>
+  </cdi>
+  <mvc>
+    <profile package="org.openurp.edu.ws">
+      <action suffix="WS" defaultMethod="index" />
+      <url path="/" suffix="" style="seo" />
+      <interceptor name="web.Interceptor.hibernate" />
+      <interceptor name="web.Interceptor.cors"/>
+    </profile>
+  </mvc>
+</beangle>

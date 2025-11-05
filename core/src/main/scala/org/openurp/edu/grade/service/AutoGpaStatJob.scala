@@ -20,7 +20,7 @@ package org.openurp.edu.grade.service
 import org.beangle.commons.lang.time.Stopwatch
 import org.beangle.commons.logging.Logging
 import org.beangle.data.dao.OqlBuilder
-import org.beangle.data.orm.hibernate.{DaoJob, SessionHelper}
+import org.beangle.data.orm.hibernate.{AbstractDaoTask, SessionHelper}
 import org.openurp.base.model.Project
 import org.openurp.base.std.model.Student
 import org.openurp.edu.grade.model.{CourseGrade, StdGpa}
@@ -29,7 +29,7 @@ import java.time.{Instant, LocalDate}
 
 /** GPA定时计算服务
  */
-class AutoGpaStatJob extends DaoJob, Logging {
+class AutoGpaStatJob extends AbstractDaoTask, Logging {
   var gpaService: GpaService = _
 
   // one day
@@ -149,10 +149,4 @@ class AutoGpaStatJob extends DaoJob, Logging {
     entityDao.search(q).map(_.id).toSeq
   }
 
-
-  def clean(): Unit = {
-    val session = SessionHelper.currentSession(sessionFactory).session
-    session.clear()
-    System.gc()
-  }
 }

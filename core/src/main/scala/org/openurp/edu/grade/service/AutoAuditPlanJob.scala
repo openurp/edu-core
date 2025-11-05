@@ -20,7 +20,7 @@ package org.openurp.edu.grade.service
 import org.beangle.commons.lang.time.Stopwatch
 import org.beangle.commons.logging.Logging
 import org.beangle.data.dao.OqlBuilder
-import org.beangle.data.orm.hibernate.{DaoJob, SessionHelper}
+import org.beangle.data.orm.hibernate.{AbstractDaoTask, SessionHelper}
 import org.openurp.base.model.Project
 import org.openurp.base.service.ProjectConfigService
 import org.openurp.base.std.model.Student
@@ -31,7 +31,7 @@ import java.time.LocalDate
 
 /** 自动审核计划完成情况
  */
-class AutoAuditPlanJob extends DaoJob, Logging {
+class AutoAuditPlanJob extends AbstractDaoTask, Logging {
   var auditPlanService: AuditPlanService = _
   var projectConfigService: ProjectConfigService = _
 
@@ -53,7 +53,7 @@ class AutoAuditPlanJob extends DaoJob, Logging {
           auditPlanService.audit(std, Map.empty, true)
           cnt += 1
           if cnt % 100 == 0 then
-            SessionHelper.currentSession(this.sessionFactory).session.clear()
+            clean()
             logger.info(s"audit ${startCode}~${std.code} using ${sw}")
             sw.reset().start()
             startCode = null
