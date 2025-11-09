@@ -1,20 +1,23 @@
 <?xml version="1.0"?>
-<beangle>
+<beangle xmlns="http://beangle.github.io/schema/framework"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://beangle.github.io/schema/framework http://beangle.github.io/schema/framework-1.0.xsd">
+
   <ems app-name="edu-ws"/>
   <cdi>
     <module class="org.beangle.ems.app.cas.DefaultModule"/>
     <module class="org.openurp.edu.ws.schedule.DefaultModule"/>
     <module class="org.openurp.edu.ws.clazz.DefaultModule"/>
     <module class="org.openurp.edu.ws.DefaultModule"/>
-    <module class="org.openurp.edu.grade.service.DefaultModule" />
-    <module class="org.openurp.edu.program.service.DefaultModule" />
-    <module class="org.openurp.edu.grade.service.AuditModule" />
+    <module class="org.openurp.edu.grade.service.DefaultModule"/>
+    <module class="org.openurp.edu.program.service.DefaultModule"/>
+    <module class="org.openurp.edu.grade.service.AuditModule"/>
   </cdi>
   <mvc>
     <profile package="org.openurp.edu.ws">
-      <action suffix="WS" defaultMethod="index" />
-      <url path="/" suffix="" style="seo" />
-      <interceptor name="web.Interceptor.hibernate" />
+      <action suffix="WS" defaultMethod="index"/>
+      <url path="/" suffix="" style="seo"/>
+      <interceptor name="web.Interceptor.hibernate"/>
       <interceptor name="web.Interceptor.cors"/>
     </profile>
   </mvc>
