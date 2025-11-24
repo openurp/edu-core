@@ -41,7 +41,7 @@ class AuditExamTakerListener extends AuditPlanListener {
     builder.where("et.examType.id in(:makeupTypeIds)", Seq(ExamType.Makeup, ExamType.Delay))
     builder.where(s"not exists(from ${classOf[ExamGrade].getName} eg where " +
       " eg.courseGrade.clazz=et.clazz and eg.courseGrade.std=et.std" +
-      s" and eg.gradeType.id in(${GradeType.Makeup},${GradeType.Delay}) and eg.status=:status)", Grade.Status.Published)
+      s" and eg.gradeType.id in(${GradeType.Makeup},${GradeType.Delay}))")
     val examTakers = entityDao.search(builder)
 
     if (examTakers.nonEmpty) {

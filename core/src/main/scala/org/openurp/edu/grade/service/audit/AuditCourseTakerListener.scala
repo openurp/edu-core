@@ -45,7 +45,7 @@ class AuditCourseTakerListener extends AuditPlanListener {
       result.getCourseResult(ct.course) foreach { cr =>
         used.addOne(ct)
         cr.taking = true
-        cr.addRemark("在读")
+        cr.addRemark(s"在读 ${ct.semester.code}(${ct.clazz.crn})")
         cr.groupResult.addCourseResult(cr)
       }
     }
@@ -68,6 +68,9 @@ class AuditCourseTakerListener extends AuditPlanListener {
             cr.taking = true
             cr.addRemark("在读")
             cr.addRemark(sc.news.map(_.name).mkString(","))
+            courseTakers.find(x => sc.news.contains(x.course)) foreach { ct =>
+              cr.addRemark(s"${ct.semester.code}(${ct.clazz.crn})")
+            }
             cr.groupResult.addCourseResult(cr)
             used.addAll(courseTakers.filter(x => sc.news.contains(x.course)))
           }
@@ -91,7 +94,7 @@ class AuditCourseTakerListener extends AuditPlanListener {
     val cr = groupResult.getCourseResult(taker.course).getOrElse(new AuditCourseResult(taker.course))
     cr.taking = true
     groupResult.addCourseResult(cr)
-    cr.addRemark("在读")
+    cr.addRemark(s"在读 ${taker.semester.code}(${taker.clazz.crn})")
     var courseType = taker.courseType
     if (null == courseType) courseType = taker.clazz.courseType
     if (isLast && courseType != groupResult.courseType) {
