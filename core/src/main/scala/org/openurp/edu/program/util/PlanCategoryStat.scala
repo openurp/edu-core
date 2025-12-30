@@ -90,6 +90,13 @@ class PlanCategoryStat(plan: CoursePlan, val credits: Float, natures: collection
     }
   }
 
+  /** 是否完全的实践课
+   *
+   * @param course
+   * @param courseJournal
+   * @param courseType
+   * @return true是全实践课，false是全理论课，None 表示混合学时
+   */
   def isPurePractical(course: Course, courseJournal: CourseJournal, courseType: CourseType): Option[Boolean] = {
     if (courseJournal.hours.isEmpty) {
       Some(course.practical || courseType.module.exists(_.practical))
@@ -115,7 +122,9 @@ class PlanCategoryStat(plan: CoursePlan, val credits: Float, natures: collection
       isPurePractical(c, cj, g.courseType) match {
         case Some(pp) =>
           if (pp) {
-            practical.addCourse(c.getCredits(level), Map(practicalNature -> cj.creditHours), pc.terms)
+            //按周计算的实践课，不计算学时
+            val creditHours = if cj.weeks.getOrElse(0) == 0 then cj.creditHours else 0
+            practical.addCourse(c.getCredits(level), Map(practicalNature -> creditHours), pc.terms)
           } else {
             theory.addCourse(c.getCredits(level), Map(lectureNature -> cj.creditHours), pc.terms)
           }

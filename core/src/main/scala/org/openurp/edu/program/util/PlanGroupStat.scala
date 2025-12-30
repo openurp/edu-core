@@ -88,11 +88,12 @@ class PlanGroupStat private(plan: CoursePlan, natures: collection.Seq[TeachingNa
       }
       for (pc <- group.planCourses) {
         val journal = pc.journal
-        creditHours += journal.creditHours
         credits += pc.credits
-
-        journal.hours foreach { h =>
-          hours.put(h.nature, hours.getOrElseUpdate(h.nature, 0) + h.creditHours)
+        if (journal.weeks.getOrElse(0) == 0) {
+          creditHours += journal.creditHours
+          journal.hours foreach { h =>
+            hours.put(h.nature, hours.getOrElseUpdate(h.nature, 0) + h.creditHours)
+          }
         }
         terms += pc.terms
         addCredits(pc, termCredits)
