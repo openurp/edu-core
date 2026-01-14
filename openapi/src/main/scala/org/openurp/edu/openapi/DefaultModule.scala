@@ -19,21 +19,13 @@ package org.openurp.edu.openapi
 
 import org.beangle.commons.cdi.BindModule
 
-import java.time.{LocalDate, LocalDateTime, LocalTime, OffsetDateTime, YearMonth, ZonedDateTime}
-import java.time.format.DateTimeFormatter
+import java.time.{LocalTime, OffsetDateTime, YearMonth, ZonedDateTime}
 
 class DefaultModule extends BindModule {
 
   protected def binding(): Unit = {
+    bind("web.Interceptor.app", AppVerifyInterceptor)
     bind(classOf[exam.StudentWS])
     bind(classOf[grade.StdWS])
-  }
-}
-object DefaultModule {
-  def main(args: Array[String]): Unit = {
-    println(ZonedDateTime.now().withNano(0).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
-    println(OffsetDateTime.now().withNano(0).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
-    println(YearMonth.now)
-    println(LocalTime.now.withNano(0))
   }
 }

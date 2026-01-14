@@ -12,8 +12,9 @@
     <profile package="org.openurp.edu.openapi">
       <action suffix="WS" defaultMethod="index"/>
       <url path="/" suffix="" style="seo"/>
-      <interceptor name="web.Interceptor.hibernate"/>
+      <interceptor name="web.Interceptor.app"/>
       <interceptor name="web.Interceptor.cors"/>
+      <interceptor name="web.Interceptor.hibernate"/>
     </profile>
   </mvc>
 </beangle>
