@@ -30,7 +30,7 @@ import org.scalatest.matchers.should.Matchers
 
 import java.time.LocalDate
 
-class FilterTest extends AnyFunSpec with Matchers {
+class FilterTest extends AnyFunSpec, Matchers {
 
   describe("Filter") {
     val std = new Student

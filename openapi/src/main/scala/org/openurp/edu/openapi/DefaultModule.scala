@@ -15,13 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openurp.edu.ws.course
+package org.openurp.edu.openapi
 
 import org.beangle.commons.cdi.BindModule
+
+import java.time.{LocalDate, LocalDateTime, LocalTime, OffsetDateTime, YearMonth, ZonedDateTime}
+import java.time.format.DateTimeFormatter
 
 class DefaultModule extends BindModule {
 
   protected def binding(): Unit = {
-    bind(classOf[NewCourseWS])
+    bind(classOf[exam.StudentWS])
+    bind(classOf[grade.StdWS])
+  }
+}
+object DefaultModule {
+  def main(args: Array[String]): Unit = {
+    println(ZonedDateTime.now().withNano(0).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+    println(OffsetDateTime.now().withNano(0).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+    println(YearMonth.now)
+    println(LocalTime.now.withNano(0))
   }
 }

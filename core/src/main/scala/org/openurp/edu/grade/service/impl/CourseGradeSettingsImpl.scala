@@ -17,17 +17,13 @@
 
 package org.openurp.edu.grade.service.impl
 
-import com.google.gson.Gson
-import org.beangle.commons.collection.Collections
+import org.beangle.commons.json.{Json, JsonObject}
 import org.beangle.commons.lang.Strings
 import org.openurp.base.model.Project
 import org.openurp.base.service.ProjectConfigService
 import org.openurp.code.edu.model.{CourseTakeType, ExamStatus, GradeType}
 import org.openurp.code.service.CodeService
-import org.openurp.edu.grade.service.impl.CourseGradeSettingsImpl.*
 import org.openurp.edu.grade.service.{BaseServiceImpl, CourseGradeSetting, CourseGradeSettings}
-
-import java.util as ju
 
 class CourseGradeSettingsImpl extends BaseServiceImpl, CourseGradeSettings {
 
@@ -50,44 +46,37 @@ class CourseGradeSettingsImpl extends BaseServiceImpl, CourseGradeSettings {
 
 object CourseGradeSettingsImpl {
   def parse(str: String): CourseGradeSetting = {
-    val gson = new Gson()
-    val obj = gson.fromJson(str, classOf[ju.Map[String, Any]])
+    val obj = Json.parseObject(str)
     val setting = new CourseGradeSetting()
-    import scala.jdk.CollectionConverters.*
-    obj.get("gaElementTypes").asInstanceOf[ju.List[ju.Map[String, Any]]].asScala foreach { eleType =>
-      setting.gaElementTypes.addOne(toGradeType(eleType))
+    obj.getArray("gaElementTypes") foreach { ele =>
+      setting.gaElementTypes.addOne(toGradeType(ele.asInstanceOf[JsonObject]))
     }
-    obj.get("noMakeupExamStatuses").asInstanceOf[ju.List[ju.Map[String, Any]]].asScala foreach { eleType =>
-      setting.noMakeupExamStatuses.addOne(toExamStatus(eleType))
+    obj.getArray("noMakeupExamStatuses") foreach { ele =>
+      setting.noMakeupExamStatuses.addOne(toExamStatus(ele.asInstanceOf[JsonObject]))
     }
-    obj.get("emptyScoreStatuses").asInstanceOf[ju.List[ju.Map[String, Any]]].asScala foreach { eleType =>
-      setting.emptyScoreStatuses.addOne(toExamStatus(eleType))
+    obj.getArray("emptyScoreStatuses") foreach { ele =>
+      setting.emptyScoreStatuses.addOne(toExamStatus(ele.asInstanceOf[JsonObject]))
     }
-    obj.get("noMakeupTakeTypes").asInstanceOf[ju.List[ju.Map[String, Any]]].asScala foreach { eleType =>
-      setting.noMakeupTakeTypes.addOne(toCourseTakeType(eleType))
+    obj.getArray("noMakeupTakeTypes").foreach { ele =>
+      setting.noMakeupTakeTypes.addOne(toCourseTakeType(ele.asInstanceOf[JsonObject]))
     }
-    setting.submitIsPublish = obj.get("submitIsPublish").asInstanceOf[java.lang.Boolean].booleanValue()
+    setting.submitIsPublish = obj.getBoolean("submitIsPublish", false)
     setting
   }
 
-  private def toGradeType(data: ju.Map[String, Any]): GradeType = {
-    val gt = new GradeType(data.get("id").asInstanceOf[Number].intValue)
-    gt.name = data.get("name").toString
+  private def toGradeType(ele: JsonObject): GradeType = {
+    val gt = new GradeType(ele.getInt("id"))
+    gt.name = ele.getString("name")
     gt
   }
 
-  private def toExamStatus(data: ju.Map[String, Any]): ExamStatus = {
-    val status = new ExamStatus(data.get("id").asInstanceOf[Number].intValue)
-    status.name = data.get("name").toString
+  private def toExamStatus(elem: JsonObject): ExamStatus = {
+    val status = new ExamStatus(elem.getInt("id"))
+    status.name = elem.getString("name")
     status
   }
 
-  private def toCourseTakeType(data: ju.Map[String, Any]): CourseTakeType = {
-    new CourseTakeType(data.get("id").asInstanceOf[Number].intValue, null, data.get("name").toString, null)
-  }
-
-  def main(args: Array[String]): Unit = {
-    val setting = parse("""{"gaElementTypes":[{"id":2,"name":"期末成绩"},{"id":3,"name":"平时成绩"}],"noMakeupExamStatuses":[{"id":2,"name":"缓考"},{"id":3,"name":"缺考"}],"noMakeupTakeTypes":[{"name":"重修","id":3}],"emptyScoreStatuses":[{"id":2,"name":"缓考"},{"id":3,"name":"缺考"}],"submitIsPublish":false}""")
-    println(setting.gaElementTypes.size)
+  private def toCourseTakeType(elem: JsonObject): CourseTakeType = {
+    new CourseTakeType(elem.getInt("id"), null, elem.getString("name"), null)
   }
 }

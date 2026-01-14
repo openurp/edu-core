@@ -17,9 +17,10 @@
 
 package org.openurp.edu.program.util
 
+import org.beangle.commons.bean.Properties
 import org.beangle.commons.collection.Collections
 import org.openurp.base.edu.model.{Course, Terms}
-import org.openurp.edu.program.model.{AbstractCourseGroup, CourseGroup, MajorPlanCourse, PlanCourse}
+import org.openurp.edu.program.model.{CourseGroup, MajorPlanCourse, PlanCourse}
 
 object PlanCourseCluster {
 
@@ -70,7 +71,7 @@ object PlanCourseCluster {
           npc.course = tc
           npc.terms = Terms(fcs.map(_.terms.toString).mkString(","))
           npc.group = group
-          npc.remark = fcs.head.asInstanceOf[MajorPlanCourse].remark
+          npc.remark = Option(Properties.get[String](fcs.head,"remark"))
           course2Clusters.put(first.course, npc)
         }
         val rs = Collections.newBuffer[PlanCourse]

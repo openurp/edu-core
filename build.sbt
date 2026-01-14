@@ -1,7 +1,7 @@
 import org.openurp.parent.Dependencies.*
 import org.openurp.parent.Settings.*
 
-ThisBuild / version := "0.4.5-SNAPSHOT"
+ThisBuild / version := "0.4.5"
 
 ThisBuild / scmInfo := Some(
   ScmInfo(
@@ -22,8 +22,8 @@ ThisBuild / developers := List(
 ThisBuild / description := "OpenURP Edu Core Library"
 ThisBuild / homepage := Some(url("http://openurp.github.io/edu-core/index.html"))
 
-val apiVer = "0.49.0"
-val starterVer = "0.4.9"
+val apiVer = "0.49.1"
+val starterVer = "0.4.10"
 
 val openurp_edu_api = "org.openurp.edu" % "openurp-edu-api" % apiVer
 val openurp_std_api = "org.openurp.std" % "openurp-std-api" % apiVer
@@ -34,7 +34,7 @@ lazy val root = (project in file("."))
     common,
     name := "openurp-edu-core-root",
     organization := "org.openurp.edu")
-  .aggregate(core, ws)
+  .aggregate(core, ws, openapi)
 
 lazy val core = (project in file("core"))
   .settings(
@@ -43,13 +43,25 @@ lazy val core = (project in file("core"))
     common,
     libraryDependencies ++= Seq(openurp_edu_api, openurp_std_api),
     libraryDependencies ++= Seq(beangle_ems_app),
-    libraryDependencies ++= Seq(beangle_doc_transfer, beangle_cdi, beangle_security)
+    libraryDependencies ++= Seq(beangle_cdi, beangle_security)
   )
 
 lazy val ws = (project in file("ws"))
   .enablePlugins(WarPlugin, UndertowPlugin, TomcatPlugin)
   .settings(
     name := "openurp-edu-ws",
+    organization := "org.openurp.edu",
+    common,
+    libraryDependencies ++= Seq(openurp_edu_api, openurp_std_api),
+    libraryDependencies ++= Seq(beangle_ems_app, openurp_stater_ws),
+    libraryDependencies ++= Seq(spring_tx, spring_jdbc)
+  ).dependsOn(core)
+
+
+lazy val openapi = (project in file("openapi"))
+  .enablePlugins(WarPlugin, UndertowPlugin, TomcatPlugin)
+  .settings(
+    name := "openurp-edu-openapi",
     organization := "org.openurp.edu",
     common,
     libraryDependencies ++= Seq(openurp_edu_api, openurp_std_api),

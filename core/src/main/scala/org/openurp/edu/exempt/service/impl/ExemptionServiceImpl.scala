@@ -17,11 +17,9 @@
 
 package org.openurp.edu.exempt.service.impl
 
-import org.apache.commons.jexl3.introspection.JexlPermissions
-import org.apache.commons.jexl3.scripting.JexlScriptEngine
 import org.beangle.commons.collection.Collections
 import org.beangle.commons.lang.Strings
-import org.beangle.commons.script.{ExpressionEvaluator, JSR223ExpressionEvaluator}
+import org.beangle.commons.script.ExpressionEvaluator
 import org.beangle.data.dao.{EntityDao, OqlBuilder}
 import org.openurp.base.edu.model.Course
 import org.openurp.base.model.Semester
@@ -48,10 +46,7 @@ class ExemptionServiceImpl extends ExemptionService {
 
   var gradeRateService: GradeRateService = _
 
-  var evaluator = {
-    JexlScriptEngine.setPermissions(JexlPermissions.UNRESTRICTED)
-    ExpressionEvaluator.jsr223("jexl3")
-  }
+  var evaluator = ExpressionEvaluator.get("jexl3")
 
   override def calcExemptScore(grade: CertificateGrade): Option[Float] = {
     val q = OqlBuilder.from(classOf[CertExemptSetting], "setting")
