@@ -36,7 +36,7 @@ class EnNameChecker {
       journal.enName match
         case None => result.put(journal, "缺少英文名")
         case Some(enName) =>
-          val rs = Json.parse(HttpUtils.getText(Ems.api + "/tools/lang/en/check.json?name=" +
+          val rs = Json.parse(HttpUtils.get(Ems.api + "/tools/lang/en/check.json?name=" +
             URLEncoder.encode(enName, Charsets.UTF_8)).getText).asInstanceOf[JsonObject]
           if (!rs.getBoolean("success")) {
             result.put(journal, rs.getArray("data").map(_.toString).mkString(";"))

@@ -17,7 +17,7 @@
 
 package org.openurp.edu.grade.service.audit
 
-import org.beangle.commons.cdi.{Container, ContainerAware}
+import org.beangle.commons.cdi.Container
 import org.beangle.commons.lang.Strings
 import org.beangle.commons.logging.Logging
 import org.beangle.data.dao.{EntityDao, OqlBuilder}
@@ -29,7 +29,7 @@ import org.openurp.edu.grade.service.AuditPlanService
 import org.openurp.edu.program.domain.CoursePlanProvider
 import org.openurp.edu.service.Features
 
-class AuditPlanServiceImpl extends DefaultPlanAuditor, AuditPlanService, Logging, ContainerAware {
+class AuditPlanServiceImpl extends DefaultPlanAuditor, AuditPlanService, Logging {
 
   var entityDao: EntityDao = _
 
