@@ -18,33 +18,24 @@
 package org.openurp.edu.grade.service.impl
 
 import org.beangle.commons.bean.Initializing
+import org.beangle.commons.cdi.Container
 import org.beangle.commons.collection.Collections
 import org.beangle.commons.lang.Strings
 import org.openurp.edu.grade.domain.GradeFilter
-import org.springframework.context.{ApplicationContext, ApplicationContextAware}
 
 /**
  * 基于spring的过滤器注册表
  *
  */
-class SpringGradeFilterRegistry extends GradeFilterRegistry, ApplicationContextAware, Initializing {
+class SpringGradeFilterRegistry extends GradeFilterRegistry, Initializing {
 
-  val filters = Collections.newMap[String, GradeFilter]
+  private val filters = Collections.newMap[String, GradeFilter]
 
-  var context: ApplicationContext = _
+  var container: Container = _
 
   override def init(): Unit = {
-    if (null == context) return
-    val names = context.getBeanNamesForType(classOf[GradeFilter])
-    if (null != names && names.nonEmpty) {
-      for (name <- names) {
-        filters.put(name, context.getBean(name).asInstanceOf[GradeFilter])
-      }
-    }
-  }
-
-  override def setApplicationContext(context: ApplicationContext): Unit = {
-    this.context = context
+    if (null == container) return
+    filters.addAll(container.getBeans(classOf[GradeFilter]))
   }
 
   def getFilter(name: String): GradeFilter = {

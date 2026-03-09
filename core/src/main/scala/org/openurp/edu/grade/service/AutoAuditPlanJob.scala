@@ -20,7 +20,7 @@ package org.openurp.edu.grade.service
 import org.beangle.commons.lang.time.Stopwatch
 import org.beangle.commons.logging.Logging
 import org.beangle.data.dao.OqlBuilder
-import org.beangle.data.orm.hibernate.{AbstractDaoTask, SessionHelper}
+import org.beangle.data.orm.AbstractDaoTask
 import org.openurp.base.model.Project
 import org.openurp.base.service.ProjectConfigService
 import org.openurp.base.std.model.Student

@@ -21,22 +21,20 @@ import org.beangle.commons.cdi.BindModule
 import org.openurp.base.service.impl.{ProjectConfigServiceImpl, SemesterServiceImpl}
 import org.openurp.edu.clazz.domain.DefaultClazzProvider
 import org.openurp.edu.grade.service.{AutoAuditPlanJob, AutoGpaStatJob}
-import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler
-import org.springframework.scheduling.config.{CronTask, ScheduledTaskRegistrar}
 
 class DefaultModule extends BindModule {
 
   protected def binding(): Unit = {
     bind(classOf[SemesterServiceImpl])
     bind(classOf[ProjectConfigServiceImpl])
-    bind(classOf[ConcurrentTaskScheduler])
-    bind(classOf[ScheduledTaskRegistrar]).nowire("triggerTasks", "triggerTasksList")
 
-    bind(classOf[AutoAuditPlanJob]).lazyInit(false)
-    bindTask(classOf[AutoAuditPlanJob], "0 0 7,9,11,13,15,17,19,21,23 * * *") //every two hours
+    bind(classOf[AutoAuditPlanJob])
+      .property("expression", "0 0 7,9,11,13,15,17,19,21,23 * * *")
+      .lazyInit(false)
 
-    bind(classOf[AutoGpaStatJob]).lazyInit(false)
-    bindTask(classOf[AutoGpaStatJob], "0 27 7,9,11,13,15,17,19,20,23 * * *") //every two hours
+    bind(classOf[AutoGpaStatJob])
+      .property("expression", "0 0 7,9,11,13,15,17,19,20,23 * * *")
+      .lazyInit(false)
 
     bind(classOf[DefaultClazzProvider])
 
@@ -45,9 +43,5 @@ class DefaultModule extends BindModule {
     bind(classOf[schedule.StudentWS])
   }
 
-  protected def bindTask[T <: Runnable](clazz: Class[T], expression: String): Unit = {
-    val taskName = clazz.getName
-    bind(taskName + "Task", classOf[CronTask]).constructor(ref(taskName), expression).lazyInit(false)
-  }
 
 }

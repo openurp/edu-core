@@ -17,34 +17,26 @@
 
 package org.openurp.edu.grade.service.impl
 
+import org.beangle.commons.bean.Initializing
+import org.beangle.commons.cdi.Container
 import org.beangle.commons.collection.Collections
 import org.beangle.commons.lang.Strings
 import org.openurp.edu.grade.service.TranscriptDataProvider
-import org.springframework.beans.BeansException
-import org.springframework.beans.factory.InitializingBean
-import org.springframework.context.ApplicationContext
-import org.springframework.context.ApplicationContextAware
-import org.beangle.commons.bean.Initializing
 
 /**
  * 基于spring的过滤器注册表
  *
  *
  */
-class SpringTranscriptDataProviderRegistry extends ApplicationContextAware with Initializing {
+class SpringTranscriptDataProviderRegistry extends Initializing {
 
-  val providers = Collections.newMap[String, TranscriptDataProvider]
+  private val providers = Collections.newMap[String, TranscriptDataProvider]
 
-  var context: ApplicationContext = _
+  var container: Container = _
 
   override def init(): Unit = {
-    if (null == context) return
-    val names = context.getBeanNamesForType(classOf[TranscriptDataProvider])
-    if (null != names && names.nonEmpty) {
-      for (name <- names) {
-        providers.put(name, context.getBean(name).asInstanceOf[TranscriptDataProvider])
-      }
-    }
+    if (null == container) return
+    providers.addAll(container.getBeans(classOf[TranscriptDataProvider]))
   }
 
   def getProvider(name: String): TranscriptDataProvider = {
@@ -55,9 +47,5 @@ class SpringTranscriptDataProviderRegistry extends ApplicationContextAware with 
     if (Strings.isBlank(name)) return List.empty
     val filterNames = Strings.split(name, Array('|', ','))
     filterNames.map(x => providers.get(x)).flatten.toSeq
-  }
-
-  override def setApplicationContext(context: ApplicationContext): Unit = {
-    this.context = context
   }
 }

@@ -19,8 +19,9 @@ package org.openurp.edu.grade.service
 
 import org.beangle.commons.lang.time.Stopwatch
 import org.beangle.commons.logging.Logging
+import org.beangle.cron.Scheduled
 import org.beangle.data.dao.OqlBuilder
-import org.beangle.data.orm.hibernate.{AbstractDaoTask, SessionHelper}
+import org.beangle.data.orm.AbstractDaoTask
 import org.openurp.base.model.Project
 import org.openurp.base.std.model.Student
 import org.openurp.edu.grade.model.{CourseGrade, StdGpa}
@@ -29,9 +30,10 @@ import java.time.{Instant, LocalDate}
 
 /** GPA定时计算服务
  */
-class AutoGpaStatJob extends AbstractDaoTask, Logging {
+class AutoGpaStatJob extends AbstractDaoTask, Scheduled, Logging {
   var gpaService: GpaService = _
 
+  var expression: String = _
   // one day
   var minUpdateDays = 1
   // 每次计算多少个
