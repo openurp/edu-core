@@ -18,6 +18,7 @@
 package org.openurp.edu.grade.service
 
 import org.beangle.commons.cdi.BindModule
+import org.beangle.commons.script.ExpressionEvaluator
 import org.openurp.edu.grade.domain.DefaultCourseGradeProvider
 import org.openurp.edu.grade.service.filters.{BestGradeFilter, BestOriginGradeFilter, MakeupGradeFilter, ScriptGradeFilter}
 import org.openurp.edu.grade.service.impl.*
@@ -37,6 +38,7 @@ class DefaultModule extends BindModule {
 
     bind("gradeFilterRegistry", classOf[SpringGradeFilterRegistry])
     bind("makeupGradeFilter", classOf[MakeupGradeFilter])
+    bind("expressionEvaluator",ExpressionEvaluator.get("jexl3"))
     bind("scriptGradeFilter", classOf[ScriptGradeFilter])
 
     bind("courseGradeProvider", classOf[DefaultCourseGradeProvider])

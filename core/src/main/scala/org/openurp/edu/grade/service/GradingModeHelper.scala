@@ -25,11 +25,11 @@ import org.openurp.edu.grade.config.GradeRateConfig
 
 class GradingModeHelper {
 
-  var gradeStyles = Collections.newMap[String, GradingMode]
+  private var gradeStyles = Collections.newMap[String, GradingMode]
 
-  var styles = Collections.newMap[String, GradingMode]
+  private var styles = Collections.newMap[String, GradingMode]
 
-  var defaultGradingMode: GradingMode = _
+  private var defaultGradingMode: GradingMode = _
 
   var entityDao: EntityDao = _
 
