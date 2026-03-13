@@ -45,11 +45,11 @@ class AuditLastListener extends AuditPlanListener{
 
       gr.indexno = "99.99" //尽量放到最后
       for (course <- rests) {
-        val grades = stdGrade.useGrade(course)
+        val grades = stdGrade.consume(course)
         val credits = course.getCredits(result.std.level)
         if (credits > 0) {
           val cr = gr.getCourseResult(course).getOrElse(new AuditCourseResult(course))
-          grades foreach { grade =>
+          grades.map(_.best) foreach { grade =>
             cr.addRemark("原" + grade.courseType.name)
           }
           cr.updatePassed(grades)

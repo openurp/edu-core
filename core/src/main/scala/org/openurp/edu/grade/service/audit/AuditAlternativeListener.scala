@@ -45,12 +45,12 @@ class AuditAlternativeListener extends AuditPlanListener {
       for (sc <- substitutions if sc.olds.subsetOf(courseMap.keySet) && isSubstitutes(stdGrade, sc)) {
         val substituteGrades = Collections.newBuffer[CourseGrade]
         for (c <- sc.news) {
-          substituteGrades ++= stdGrade.useGrade(c) //替代成绩不支持反复使用
+          substituteGrades += stdGrade.consume(c).get.best //替代成绩不支持反复使用
         }
         // 增加原课程审核结果
         for (ori <- sc.olds) {
           val cr = courseMap(ori)
-          cr.updatePassed(stdGrade.useGrade(cr.course), substituteGrades)
+          cr.updatePassed(stdGrade.consume(cr.course), substituteGrades)
           cr.groupResult.addCourseResult(cr)
           if (cr.passed) courseMap.remove(ori) //有可能是一门不及格课程替代没有成绩的课程，所以判断以下是否还需保留
         }
@@ -65,7 +65,7 @@ class AuditAlternativeListener extends AuditPlanListener {
 
     val subGrades = Collections.newMap[Course, CourseGrade]
     for (course <- allCourses) {
-      stdGrade.getGrade(course) foreach { g => subGrades.put(course, g) }
+      stdGrade.getGrades(course) foreach { g => subGrades.put(course, g.best) }
     }
     GradeComparator.isSubstitute(ac, subGrades)
   }

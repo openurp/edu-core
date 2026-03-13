@@ -23,6 +23,9 @@ import org.openurp.edu.grade.domain.{AuditPlanContext, AuditPlanListener}
 import org.openurp.edu.grade.model.CourseGrade
 import org.openurp.edu.program.model.PlanCourse
 
+/**
+ * 针对同名课程，按照优先级进行覆盖
+ */
 class AuditSameCourseFilter extends AuditPlanListener {
 
   override def start(context: AuditPlanContext): Unit = {
@@ -34,10 +37,10 @@ class AuditSameCourseFilter extends AuditPlanListener {
     }
     val stdGrade = context.stdGrade
     //所有成绩按照课程名称分组
-    val courseNameMap = stdGrade.restCourses.map(stdGrade.getGrade(_).get).groupBy(_.course.name)
+    val courseNameMap = stdGrade.restCourses.map(stdGrade.best).groupBy(_.course.name)
     courseNameMap foreach { case (courseName, grades) =>
       if (grades.size > 1) {
-        val priorities = Collections.newBuffer[Tuple2[Int, CourseGrade]]
+        val priorities = Collections.newBuffer[(Int, CourseGrade)]
         grades foreach { g =>
           var priority = 0
           course2pc.get(g.course) foreach { pc =>
@@ -53,7 +56,7 @@ class AuditSameCourseFilter extends AuditPlanListener {
           priorities.addOne(priority -> g)
           val sorted = priorities.sortBy(_._1).reverse
           val tail = sorted.tail
-          tail foreach { g => stdGrade.useGrade(g._2.course) }
+          tail foreach { g => stdGrade.consume(g._2.course) }
         }
       }
     }

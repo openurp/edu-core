@@ -37,12 +37,13 @@ class AuditCourseTypeMatchListener extends AuditPlanListener {
     val stdGrade = context.stdGrade
     val restCourses = stdGrade.restCourses
     for (course <- restCourses) {
-      val grades = stdGrade.getGrade(course)
-      val courseType = grades.head.courseType
+      val best = stdGrade.best(course)
+      val grades = stdGrade.getGrades(course)
+      val courseType = best.courseType
       context.getGroup(course, courseType) foreach { g =>
         val gr = context.result.getGroupResult(g.name).get //需要按照组的名称查找，可能这个组已经不是courseType类别的了
         // 计划里的必修组，不能按照类别匹配
-        stdGrade.useGrade(course)
+        stdGrade.consume(course)
         val cr = gr.getCourseResult(course).getOrElse(new AuditCourseResult(course)).updatePassed(grades)
         //判断是否为计划外课程，如果课程组包含课程，那么剩余的课程都是计划外课程
         if (courseType != gr.courseType) cr.addRemark(s"原${courseType.name}")

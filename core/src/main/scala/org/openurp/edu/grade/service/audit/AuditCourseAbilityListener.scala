@@ -87,7 +87,7 @@ class AuditCourseAbilityListener extends AuditPlanListener {
             if (cr.compulsory && (subjectRates(rate.subject).size > 1 || overCredits)) {
               cr.compulsory = false
             }
-            val courseGrades = context.stdGrade.useGrade(pc.course)
+            val courseGrades = context.stdGrade.consume(pc.course)
             cr.updatePassed(courseGrades)
             if cr.passed || pc.compulsory || cr.hasGrade then gr.addCourseResult(cr)
           }

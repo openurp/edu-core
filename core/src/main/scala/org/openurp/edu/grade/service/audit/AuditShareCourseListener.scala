@@ -36,14 +36,13 @@ class AuditShareCourseListener extends AuditPlanListener {
       val restCourses = stdGrade.restCourses
       if (restCourses.nonEmpty) {
         for (course <- restCourses; if context.shareCourses.contains(course)) {
-          val grades = stdGrade.getGrade(course)
           val courseType = context.shareCourses(course)
           context.result.getGroupResult(courseType.name) foreach { gr =>
             val g = context.coursePlan.getGroup(gr.name).orNull
-            stdGrade.useGrade(course)
+            val grades = stdGrade.consume(course)
             val cr = gr.getCourseResult(course).getOrElse(new AuditCourseResult(course)).updatePassed(grades)
-            if (gr.courseType != grades.head.courseType) {
-              cr.addRemark(s"原${grades.head.courseType.name}")
+            if (gr.courseType != grades.get.best.courseType) {
+              cr.addRemark(s"原${grades.get.best.courseType.name}")
             }
             gr.addCourseResult(cr)
           }
