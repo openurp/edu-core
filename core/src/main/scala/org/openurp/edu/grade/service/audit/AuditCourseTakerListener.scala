@@ -37,7 +37,7 @@ class AuditCourseTakerListener extends AuditPlanListener {
     val builder = OqlBuilder.from(classOf[CourseTaker], "ct").where("ct.std=:std", context.std)
     builder.where(s"not exists(from ${classOf[CourseGrade].getName} cg where cg.semester=ct.clazz.semester" +
       " and cg.course=ct.clazz.course and cg.std=ct.std and cg.status=:status)", Grade.Status.Published)
-    val courseTakers = entityDao.search(builder)
+    val courseTakers = entityDao.search(builder).toBuffer
     val last = getTargetGroupResult(context)
     val result = context.result
     val used = Collections.newBuffer[CourseTaker]
@@ -49,18 +49,39 @@ class AuditCourseTakerListener extends AuditPlanListener {
         cr.groupResult.addCourseResult(cr)
       }
     }
+    courseTakers.subtractAll(used)
 
-    //剩余一些在读课程，考虑替代
-    val reminded = courseTakers.toBuffer.subtractAll(used).map(_.course).toSet
-    if (reminded.nonEmpty) {
+    //剩余一些在读课程，考虑多学期情况和替代
+    if (courseTakers.nonEmpty) {
       val courseMap = Collections.newMap[Course, AuditCourseResult]
       for (groupResult <- context.result.groupResults) {
         for (car <- groupResult.courseResults) {
           if !car.passed && !car.taking && !car.predicted then courseMap.put(car.course, car)
         }
       }
-      //如果有课程不及格，开始检查能否替代及格
+      //如果有课程不及格，开始检查多学期开课的课程
       if (courseMap.nonEmpty) {
+        val reminded = courseTakers.map(_.course).toSet
+        val hasSubCourses = Collections.newSet[Course]
+        courseMap.foreach { case (c, cr) =>
+          if (c.subCourse.nonEmpty && c.terms > 0 && reminded.contains(c.subCourse.get)) {
+            cr.taking = true
+            cr.addRemark("在读")
+            //有可能是多条。这次我们用filter而不是用find
+            courseTakers.filter(x => x.course == c.subCourse.get) foreach { ct =>
+              cr.addRemark(s"${ct.semester.code}(${ct.clazz.crn})")
+              used.addOne(ct)
+            }
+            hasSubCourses.add(c)
+            cr.groupResult.addCourseResult(cr)
+          }
+        }
+        courseMap.subtractAll(hasSubCourses)
+        courseTakers.subtractAll(used)
+      }
+      //如果还有课程不及格，开始检查替代
+      if (courseMap.nonEmpty) {
+        val reminded = courseTakers.map(_.course).toSet
         val substitutions = alternativeCourseProvider.getAlternatives(context.result.std)
         for (sc <- substitutions if sc.olds.subsetOf(courseMap.keySet) && sc.news.subsetOf(reminded)) {
           for (ori <- sc.olds) {
@@ -75,10 +96,11 @@ class AuditCourseTakerListener extends AuditPlanListener {
             used.addAll(courseTakers.filter(x => sc.news.contains(x.course)))
           }
         }
+        courseTakers.subtractAll(used)
       }
     }
     //如果找不到直接的审核结果,也不能替代的
-    courseTakers.toBuffer.subtractAll(used) foreach { ct =>
+    courseTakers foreach { ct =>
       var courseType = ct.courseType
       if (null == courseType) courseType = ct.clazz.courseType
       val target = context.getGroup(ct.course, courseType).flatMap(x => result.getGroupResult(x.name)).orElse(last)
