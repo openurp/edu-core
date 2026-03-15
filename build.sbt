@@ -1,7 +1,7 @@
 import org.openurp.parent.Dependencies.*
 import org.openurp.parent.Settings.*
 
-ThisBuild / version := "0.4.8"
+ThisBuild / version := "0.4.9-SNAPSHOT"
 
 ThisBuild / scmInfo := Some(
   ScmInfo(
