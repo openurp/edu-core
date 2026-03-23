@@ -38,7 +38,6 @@ class DefaultModule extends BindModule {
 
     bind("gradeFilterRegistry", classOf[SpringGradeFilterRegistry])
     bind("makeupGradeFilter", classOf[MakeupGradeFilter])
-    bind("expressionEvaluator",ExpressionEvaluator.get("jexl3"))
     bind("scriptGradeFilter", classOf[ScriptGradeFilter])
 
     bind("courseGradeProvider", classOf[DefaultCourseGradeProvider])

@@ -46,7 +46,7 @@ class ExemptionServiceImpl extends ExemptionService {
 
   var gradeRateService: GradeRateService = _
 
-  var evaluator = ExpressionEvaluator.get("jexl3")
+  private val evaluator = ExpressionEvaluator.get("jexl3")
 
   override def calcExemptScore(grade: CertificateGrade): Option[Float] = {
     val q = OqlBuilder.from(classOf[CertExemptSetting], "setting")

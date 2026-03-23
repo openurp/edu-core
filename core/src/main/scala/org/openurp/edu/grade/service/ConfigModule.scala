@@ -18,12 +18,14 @@
 package org.openurp.edu.grade.service
 
 import org.beangle.commons.cdi.BindModule
+import org.beangle.commons.script.ExpressionEvaluator
 import org.openurp.edu.grade.service.impl.{GradeRateServiceImpl, TranscriptTemplateServiceImpl}
 
 class ConfigModule extends BindModule {
 
   protected override def binding(): Unit = {
     bind(classOf[TranscriptTemplateServiceImpl])
+    bind("expressionEvaluator", ExpressionEvaluator.get("jexl3"))
     bind("gradeRateService", classOf[GradeRateServiceImpl])
   }
 }
