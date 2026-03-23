@@ -25,7 +25,6 @@ class ConfigModule extends BindModule {
 
   protected override def binding(): Unit = {
     bind(classOf[TranscriptTemplateServiceImpl])
-    bind("expressionEvaluator", ExpressionEvaluator.get("jexl3"))
     bind("gradeRateService", classOf[GradeRateServiceImpl])
   }
 }

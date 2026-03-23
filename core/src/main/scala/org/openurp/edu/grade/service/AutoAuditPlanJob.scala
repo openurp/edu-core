@@ -17,6 +17,7 @@
 
 package org.openurp.edu.grade.service
 
+import org.beangle.commons.bean.Scheduled
 import org.beangle.commons.lang.time.Stopwatch
 import org.beangle.commons.logging.Logging
 import org.beangle.data.dao.OqlBuilder
@@ -31,9 +32,10 @@ import java.time.LocalDate
 
 /** 自动审核计划完成情况
  */
-class AutoAuditPlanJob extends AbstractDaoTask, Logging {
+class AutoAuditPlanJob extends AbstractDaoTask, Logging, Scheduled {
   var auditPlanService: AuditPlanService = _
   var projectConfigService: ProjectConfigService = _
+  var expression: String = _
 
   override def execute(): Unit = {
     val projects = entityDao.getAll(classOf[Project]).filter(_.active)

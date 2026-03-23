@@ -27,19 +27,27 @@ class NewCourseWS extends ActionSupport {
 
   var entityDao: EntityDao = _
 
-  var newCourseService: NewCourseService = _
+  var newCourseService: Option[NewCourseService] = None
 
   @response
   def check(): Seq[String] = {
-    val apply = entityDao.get(classOf[NewCourseApply], getLongId("apply"))
-    val result = newCourseService.check(apply)
-    result
+    newCourseService match {
+      case None => Seq("Error:newCourseService is needed")
+      case Some(ns) =>
+        val apply = entityDao.get(classOf[NewCourseApply], getLongId("apply"))
+        val result = ns.check(apply)
+        result
+    }
   }
 
   @response
   def generate(): String = {
-    val apply = entityDao.get(classOf[NewCourseApply], getLongId("apply"))
-    newCourseService.generate(apply)
+    newCourseService match {
+      case None => "Error:newCourseService is needed"
+      case Some(ns) =>
+        val apply = entityDao.get(classOf[NewCourseApply], getLongId("apply"))
+        ns.generate(apply)
+    }
   }
 
 }

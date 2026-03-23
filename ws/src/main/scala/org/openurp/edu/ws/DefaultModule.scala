@@ -19,12 +19,14 @@ package org.openurp.edu.ws
 
 import org.beangle.commons.cdi.BindModule
 import org.openurp.base.service.impl.{ProjectConfigServiceImpl, SemesterServiceImpl}
+import org.openurp.code.service.impl.CodeServiceImpl
 import org.openurp.edu.clazz.domain.DefaultClazzProvider
 import org.openurp.edu.grade.service.{AutoAuditPlanJob, AutoGpaStatJob}
 
 class DefaultModule extends BindModule {
 
   protected def binding(): Unit = {
+    bind(classOf[CodeServiceImpl])
     bind(classOf[SemesterServiceImpl])
     bind(classOf[ProjectConfigServiceImpl])
 

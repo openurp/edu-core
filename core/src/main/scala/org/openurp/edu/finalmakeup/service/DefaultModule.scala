@@ -18,7 +18,6 @@
 package org.openurp.edu.finalmakeup.service
 
 import org.beangle.commons.cdi.BindModule
-import org.openurp.code.service.impl.CodeServiceImpl
 import org.openurp.edu.finalmakeup.service.impl.*
 
 class DefaultModule extends BindModule {
