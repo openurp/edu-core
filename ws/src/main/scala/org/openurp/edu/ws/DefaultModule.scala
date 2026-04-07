@@ -45,5 +45,4 @@ class DefaultModule extends BindModule {
     bind(classOf[schedule.StudentWS])
   }
 
-
 }

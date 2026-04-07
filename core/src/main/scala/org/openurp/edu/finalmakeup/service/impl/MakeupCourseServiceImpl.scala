@@ -64,9 +64,9 @@ class MakeupCourseServiceImpl extends MakeupCourseService {
     if (result.isEmpty) {
       "没有不及格成绩，无需补考"
     } else {
-      val existed = getTaker(makeupCourse.semester, makeupCourse.course, std)
+      val existed = getTaker(makeupCourse.course, std)
       if (existed.isDefined) {
-        "已经在" + existed.head.makeupCourse.crn + "中,无需重复添加"
+        "已经在" + existed.flatMap(_.makeupCourse.map(_.crn)).getOrElse("--") + "中,无需重复添加"
       } else {
         doAddTaker(makeupCourse, std, result)
       }
@@ -80,10 +80,9 @@ class MakeupCourseServiceImpl extends MakeupCourseService {
     entityDao.search(builder).headOption
   }
 
-  private def getTaker(semester: Semester, course: Course, std: Student): Option[FinalMakeupTaker] = {
+  private def getTaker(course: Course, std: Student): Option[FinalMakeupTaker] = {
     val query = OqlBuilder.from(classOf[FinalMakeupTaker], "mt")
-      .where("mt.makeupCourse.semester=:semester", semester)
-      .where("mt.makeupCourse.course=:course", course)
+      .where("mt.course=:course", course)
       .where("mt.std=:std", std)
     entityDao.search(query).headOption
   }
@@ -107,9 +106,9 @@ class MakeupCourseServiceImpl extends MakeupCourseService {
       "没有不及格成绩，无需补考"
     } else {
       val makeupCourse = getOrCreate(semester, course, std.state.get.department, std.state.get.squad)
-      val existed = getTaker(makeupCourse.semester, makeupCourse.course, std)
+      val existed = getTaker(makeupCourse.course, std)
       if (existed.isDefined) {
-        "已经在" + existed.head.makeupCourse.crn + "中,无需重复添加"
+        "已经在" + existed.flatMap(_.makeupCourse.map(_.crn)).getOrElse("--") + "中,无需重复添加"
       } else {
         doAddTaker(makeupCourse, std, result)
       }
