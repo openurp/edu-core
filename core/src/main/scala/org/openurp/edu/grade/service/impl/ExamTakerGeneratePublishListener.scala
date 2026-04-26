@@ -69,11 +69,15 @@ class ExamTakerGeneratePublishListener extends BaseServiceImpl with CourseGradeP
   }
 
   protected def isClazzForbidden(clazz: Clazz): Boolean = {
-    if (null != clazz) {
-      for (courseName <- forbiddenCourseNames if clazz.course.name.contains(courseName)) return true
-      for (courseTypeName <- forbiddenCourseTypeNames if clazz.courseType.name.contains(courseTypeName)) return true
+    if (null == clazz) {
+      false
+    } else {
+      var isForbidden = forbiddenCourseNames.exists(n => clazz.course.name.contains(n))
+      if (!isForbidden) {
+        isForbidden = forbiddenCourseTypeNames.exists(n => clazz.courseType.name.contains(n))
+      }
+      isForbidden
     }
-    false
   }
 
   protected def isCourseTakeTypeForbidden(grade: CourseGrade): Boolean = {

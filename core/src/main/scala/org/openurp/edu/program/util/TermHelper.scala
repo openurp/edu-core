@@ -39,14 +39,14 @@ object TermHelper {
     val suffix = getStagePostfix(stage)
     val termList = terms.termList
     if termList.isEmpty then ""
-    else if termList.size == 1 then termList.head + suffix
+    else if termList.size == 1 then s"${termList.head}${suffix}"
     else if termList.size == 2 then
-      termList.head + suffix + "+" + termList.last + suffix
+      termList.head.toString + suffix + "+" + termList.last + suffix
     else
       val last = termList.last
       val first = termList.head
-      if (last - first + 1 == termList.size) then first + suffix + "-" + last + suffix
-      else termList.map(x => x + suffix).mkString(",")
+      if (last - first + 1 == termList.size) then first.toString + suffix + "-" + last.toString + suffix
+      else termList.map(x => x.toString + suffix).mkString(",")
   }
 
   private def getStagePostfix(stage: Option[CalendarStage]): String = {

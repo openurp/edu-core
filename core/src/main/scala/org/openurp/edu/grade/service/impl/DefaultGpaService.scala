@@ -21,6 +21,7 @@ import org.beangle.data.dao.EntityDao
 import org.openurp.base.model.Semester
 import org.openurp.base.service.ProjectConfigService
 import org.openurp.base.std.model.Student
+import org.openurp.edu.clazz.domain.CourseTakerProvider
 import org.openurp.edu.grade.domain.{CourseGradeProvider, GpaCalculator, GradeFilter, GradeFilters}
 import org.openurp.edu.grade.model.{CourseGrade, StdGpa, StdSemesterGpa, StdYearGpa}
 import org.openurp.edu.grade.service.GpaService
@@ -32,6 +33,8 @@ class DefaultGpaService extends GpaService {
   private val calculator = new GpaCalculator()
 
   var courseGradeProvider: CourseGradeProvider = _
+
+  var courseTakerProvider: CourseTakerProvider = _
 
   var gradeFilterRegistry: GradeFilterRegistry = _
 
@@ -52,7 +55,7 @@ class DefaultGpaService extends GpaService {
   }
 
   override def refresh(stdGpa: StdGpa): Unit = {
-    val newer = stat(stdGpa.std, courseGradeProvider.get(stdGpa.std))
+    val newer = stat(stdGpa.std)
     merge(stdGpa, newer)
     entityDao.saveOrUpdate(stdGpa)
   }
@@ -70,7 +73,36 @@ class DefaultGpaService extends GpaService {
   }
 
   override def stat(std: Student): StdGpa = {
-    val rs = stat(std, courseGradeProvider.get(std))
+    val grades = courseGradeProvider.get(std)
+
+    //找出没有出成绩的修读记录
+    val takers = courseTakerProvider.get(std)
+    val semesterCourses = grades.map(x => (x.semester, x.course)).toSet
+    val pendingTakers = takers.filter(t => !semesterCourses.contains((t.semester, t.course)))
+    val rs = stat(std, grades)
+
+    if (pendingTakers.nonEmpty) {
+      val level = std.level
+      pendingTakers.foreach { taker =>
+        val credits = taker.course.getCredits(level)
+        var s = rs.getSemesterGpa(taker.semester)
+        if (null == s) {
+          s = new StdSemesterGpa()
+          s.semester = taker.semester
+          rs.add(s)
+        }
+        var y = rs.getYearGpa(taker.semester.schoolYear)
+        if (null == y) {
+          y = new StdYearGpa
+          y.schoolYear = taker.semester.schoolYear
+          rs.add(y)
+        }
+
+        s.addPending(credits)
+        y.addPending(credits)
+        rs.addPending(credits)
+      }
+    }
 
     val exists = entityDao.findBy(classOf[StdGpa], "std", std).headOption
     exists match {
@@ -88,24 +120,35 @@ class DefaultGpaService extends GpaService {
     if (grades.isEmpty) {
       grades
     } else {
+      val chain = new GradeFilters.Chain(getFilters(grades))
+      chain.filter(grades)
+    }
+  }
+
+  protected def getFilters(grades: Iterable[CourseGrade]): Seq[GradeFilter] = {
+    if (grades.isEmpty) {
+      List.empty
+    } else {
       val std = grades.head.std
       val filterNames = projectConfigService.get(std.project, "edu.grade.gpa_filters", "")
       //添加非免修,和不计算绩点的内置规则
       var filters = gradeFilterRegistry.getFilters(filterNames).toList
-      filters = GradeFilters.CalcGP :: GradeFilters.NotExemption :: filters
-      val filter = GradeFilters.chain(filters: _*)
-      filter.filter(grades)
+      filters = GradeFilters.defaults ::: filters
+      filters
     }
   }
 
   override def stat(std: Student, grades: collection.Seq[CourseGrade]): StdGpa = {
-    val filterGrades = filter(grades)
-    val stdGpa = calculator.calc(std, filterGrades, true)
-    val stdGpa2 = calculator.calc(std, filterGrades, false)
+    val filters = getFilters(grades)
+    val stdGpa = calculator.calc(std, grades, true, filters)
+    val stdGpa2 = calculator.calc(std, grades, false, filters)
     stdGpa.project = std.project
-    stdGpa.gradeCount = stdGpa2.gradeCount
-    stdGpa.credits = stdGpa2.credits
     stdGpa.totalCredits = stdGpa2.totalCredits
+    stdGpa.totalCount = stdGpa2.totalCount
+    stdGpa.credits = stdGpa2.credits
+    stdGpa.takenCredits = stdGpa2.takenCredits
+    stdGpa.pendingCredits = stdGpa2.pendingCredits
+
     stdGpa.wms = stdGpa2.wms
     stdGpa.ams = stdGpa2.ams
     stdGpa.gpa = stdGpa2.gpa
@@ -145,9 +188,12 @@ class DefaultGpaService extends GpaService {
     target.ams = source.ams
     target.gpa = source.gpa
     target.project = source.project
-    target.gradeCount = source.gradeCount
-    target.credits = source.credits
     target.totalCredits = source.totalCredits
+    target.totalCount = source.totalCount
+    target.credits = source.credits
+    target.takenCredits = source.takenCredits
+    target.pendingCredits = source.pendingCredits
+
     val existedTerms = target.semesterGpas.map(x => (x.semester, x)).toMap
     val sourceTerms = source.semesterGpas.map(x => (x.semester, x)).toMap
     sourceTerms foreach { (key, s) =>
@@ -158,9 +204,11 @@ class DefaultGpaService extends GpaService {
           t.wms = s.wms
           t.ams = s.ams
           t.gpa = s.gpa
-          t.gradeCount = s.gradeCount
-          t.credits = s.credits
           t.totalCredits = s.totalCredits
+          t.totalCount = s.totalCount
+          t.credits = s.credits
+          t.takenCredits = s.takenCredits
+          t.pendingCredits = s.pendingCredits
       }
     }
     for ((key, value) <- existedTerms if !sourceTerms.contains(key)) {
@@ -178,9 +226,11 @@ class DefaultGpaService extends GpaService {
           t.wms = s.wms
           t.ams = s.ams
           t.gpa = s.gpa
-          t.gradeCount = s.gradeCount
-          t.credits = s.credits
           t.totalCredits = s.totalCredits
+          t.totalCount = s.totalCount
+          t.credits = s.credits
+          t.takenCredits = s.takenCredits
+          t.pendingCredits = s.pendingCredits
       }
     }
     for ((key, value) <- existedYears if !sourceYears.contains(key)) {

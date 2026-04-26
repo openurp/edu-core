@@ -20,7 +20,6 @@ package org.openurp.edu.ws
 import org.beangle.commons.cdi.BindModule
 import org.openurp.base.service.impl.{ProjectConfigServiceImpl, SemesterServiceImpl}
 import org.openurp.code.service.impl.CodeServiceImpl
-import org.openurp.edu.clazz.domain.DefaultClazzProvider
 import org.openurp.edu.grade.service.{AutoAuditPlanJob, AutoGpaStatJob}
 
 class DefaultModule extends BindModule {
@@ -31,18 +30,17 @@ class DefaultModule extends BindModule {
     bind(classOf[ProjectConfigServiceImpl])
 
     bind(classOf[AutoAuditPlanJob])
-      .property("expression", "0 0 7,9,11,13,15,17,19,21,23 * * *")
+      .property("expression", "0 0 7,11,15,19 * * *")
       .lazyInit(false)
 
     bind(classOf[AutoGpaStatJob])
-      .property("expression", "0 0 7,9,11,13,15,17,19,20,23 * * *")
+      .property("expression", "0 0 7,10,13,16,19 * * *")
       .lazyInit(false)
-
-    bind(classOf[DefaultClazzProvider])
 
     bind(classOf[clazz.NoticeWS])
     bind(classOf[course.NewCourseWS])
     bind(classOf[schedule.StudentWS])
+    bind(classOf[room.FreeWS])
   }
 
 }

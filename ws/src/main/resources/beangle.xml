@@ -7,9 +7,9 @@
   <cdi>
     <module class="org.beangle.ems.app.cas.DefaultModule"/>
     <module class="org.openurp.edu.ws.DefaultModule"/>
-    <module class="org.openurp.edu.grade.service.ConfigModule"/>
     <module class="org.openurp.edu.grade.service.DefaultModule"/>
     <module class="org.openurp.edu.program.service.DefaultModule"/>
+    <module class="org.openurp.edu.clazz.service.DefaultModule"/>
     <module class="org.openurp.edu.grade.service.AuditModule"/>
   </cdi>
   <mvc>

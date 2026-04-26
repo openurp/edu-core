@@ -18,11 +18,12 @@
 package org.openurp.edu.clazz.service
 
 import org.beangle.commons.cdi.BindModule
-import org.openurp.edu.clazz.domain.{DefaultClazzProvider, DefaultExamTakerProvider}
+import org.openurp.edu.clazz.domain.{DefaultClazzProvider, DefaultCourseTakerProvider, DefaultExamTakerProvider}
 
 class DefaultModule extends BindModule {
   override protected def binding(): Unit = {
     bind(classOf[DefaultClazzProvider])
+    bind(classOf[DefaultCourseTakerProvider])
     bind(classOf[DefaultExamTakerProvider])
   }
 }

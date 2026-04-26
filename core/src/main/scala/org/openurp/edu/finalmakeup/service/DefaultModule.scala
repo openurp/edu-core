@@ -23,6 +23,7 @@ import org.openurp.edu.finalmakeup.service.impl.*
 class DefaultModule extends BindModule {
 
   protected override def binding(): Unit = {
-    bind(classOf[MakeupCourseCrnGeneratorImpl], classOf[MakeupCourseServiceImpl])
+    bind(classOf[MakeupCourseCrnGeneratorImpl])
+    bind(classOf[FinalMakeupServiceImpl]).onMissing(classOf[FinalMakeupService])
   }
 }

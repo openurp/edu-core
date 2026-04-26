@@ -18,8 +18,7 @@
 package org.openurp.edu.grade.service
 
 import org.beangle.commons.cdi.BindModule
-import org.beangle.commons.script.ExpressionEvaluator
-import org.openurp.edu.grade.domain.DefaultCourseGradeProvider
+import org.openurp.edu.grade.domain.{CourseGradeProvider, DefaultCourseGradeProvider}
 import org.openurp.edu.grade.service.filters.{BestGradeFilter, BestOriginGradeFilter, MakeupGradeFilter, ScriptGradeFilter}
 import org.openurp.edu.grade.service.impl.*
 import org.openurp.edu.program.domain.DefaultAlternativeCourseProvider
@@ -27,9 +26,12 @@ import org.openurp.edu.program.domain.DefaultAlternativeCourseProvider
 class DefaultModule extends BindModule {
 
   protected override def binding(): Unit = {
+    bind(classOf[TranscriptTemplateServiceImpl])
+    bind("gradeRateService", classOf[GradeRateServiceImpl])
+
     bind(classOf[CourseGradeSettingsImpl])
 
-    bind("bestGradeCourseGradeProvider", classOf[BestCourseGradeProviderImpl])
+    bind("bestCourseGradeProvider", classOf[BestCourseGradeProviderImpl])
     bind("bestOriginGradeFilter", classOf[BestOriginGradeFilter])
     bind("bestGradeFilter", classOf[BestGradeFilter])
 
@@ -40,7 +42,7 @@ class DefaultModule extends BindModule {
     bind("makeupGradeFilter", classOf[MakeupGradeFilter])
     bind("scriptGradeFilter", classOf[ScriptGradeFilter])
 
-    bind("courseGradeProvider", classOf[DefaultCourseGradeProvider])
+    bind("courseGradeProvider", classOf[DefaultCourseGradeProvider]).primaryOf(classOf[CourseGradeProvider])
     bind("courseGradeCalculator", classOf[DefaultCourseGradeCalculator])
     bind("gpaService", classOf[DefaultGpaService])
 

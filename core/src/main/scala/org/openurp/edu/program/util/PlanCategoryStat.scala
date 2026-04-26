@@ -156,12 +156,13 @@ class PlanCategoryStat(plan: CoursePlan, val credits: Float, natures: collection
   }
 
   private def getOrCreateCategory(group: CourseGroup, compulsory: Boolean, practical: Boolean, inner: Boolean, maxTerm: Int): CategoryStat = {
-    for (s <- categoryStats) {
-      if (s.name == group.name && s.compulsory == compulsory && s.practical == practical && s.inner == inner) return s
+    categoryStats.find(s => s.name == group.name && s.compulsory == compulsory && s.practical == practical && s.inner == inner) match {
+      case None =>
+        val newer = new CategoryStat(group.indexno + " " + group.name, group.rank.get, compulsory, practical, inner, maxTerm)
+        this.categoryStats.addOne(newer)
+        newer
+      case Some(r) => r
     }
-    val newer = new CategoryStat(group.indexno + " " + group.name, group.rank.get, compulsory, practical, inner, maxTerm)
-    this.categoryStats.addOne(newer)
-    newer
   }
 
   /**

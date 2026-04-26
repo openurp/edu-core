@@ -177,12 +177,12 @@ object ScheduleDigestor {
       }
       replaceStart = CourseArrangeBuf.indexOf(ScheduleDigestor.units)
       if (-1 != replaceStart) {
-        CourseArrangeBuf.replace(replaceStart, replaceStart + ScheduleDigestor.units.length, activity.beginUnit + "-" + activity.endUnit)
+        CourseArrangeBuf.replace(replaceStart, replaceStart + ScheduleDigestor.units.length, s"${activity.beginUnit}-${activity.endUnit}")
       }
       replaceStart = CourseArrangeBuf.indexOf(ScheduleDigestor.time)
       if (-1 != replaceStart) {
         // 如果教学活动中有具体时间
-        CourseArrangeBuf.replace(replaceStart, replaceStart + ScheduleDigestor.time.length, activity.time.beginAt.toString + "-" + activity.time.endAt.toString)
+        CourseArrangeBuf.replace(replaceStart, replaceStart + ScheduleDigestor.time.length, s"${activity.time.beginAt}-${activity.time.endAt}")
       }
       replaceStart = CourseArrangeBuf.indexOf(ScheduleDigestor.clazz)
       if (-1 != replaceStart) CourseArrangeBuf.replace(replaceStart, replaceStart + ScheduleDigestor.clazz.length, activity.clazz.crn)

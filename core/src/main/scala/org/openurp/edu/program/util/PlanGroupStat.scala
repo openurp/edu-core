@@ -73,7 +73,7 @@ class PlanGroupStat private(plan: CoursePlan, natures: collection.Seq[TeachingNa
     if (group.autoAddup && (group.children.nonEmpty || group.planCourses.nonEmpty)) {
       var credits = 0f
       var creditHours = 0
-      val termCredits = Array.ofDim[Float](plan.terms)
+      val termCredits = Array.ofDim[Float](plan.endTerm)
       val hours = Collections.newMap[TeachingNature, Int]
       var terms = Terms.empty
       for (child <- group.children) {
