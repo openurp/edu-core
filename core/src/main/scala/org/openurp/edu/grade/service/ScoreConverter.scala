@@ -110,7 +110,7 @@ class ScoreConverter(private var config: GradeRateConfig, private var expression
               if (exp.contains("score")) {
                 val data = new java.util.HashMap[String, Any]()
                 data.put("score", s)
-                Some(expressionEvaluator.eval(exp, data, classOf[java.lang.Float]).floatValue)
+                Some(expressionEvaluator.eval(exp, data, classOf[Number]).floatValue)
               } else {
                 Some(Numbers.toFloat(exp))
               }

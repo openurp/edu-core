@@ -86,7 +86,7 @@ class FinalMakeupServiceImpl extends FinalMakeupService {
     result foreach { r =>
       val courseType = r.groupResult.courseType
       val take = new FinalMakeupTaker(makeupCourse, std, courseType)
-      take.scores = r.scores
+      take.failScores = r.scores
       take.remark = r.remark
       makeupCourse.takers += take
       makeupCourse.stdCount += 1
@@ -127,7 +127,7 @@ class FinalMakeupServiceImpl extends FinalMakeupService {
         taker.teacher = clz.teachers.headOption
         taker.remark = Some(clz.crn)
       }
-      taker.scores = failList.map(_.scoreText.getOrElse("--")).mkString(",")
+      taker.failScores = failList.map(_.scoreText.getOrElse("--")).mkString(",")
       taker.updatedAt = Instant.now
       entityDao.saveOrUpdate(taker)
       true
@@ -233,7 +233,28 @@ class FinalMakeupServiceImpl extends FinalMakeupService {
   }
 
   override def saveGrades(makeupCourse: FinalMakeupCourse, grades: Iterable[CourseGrade]): Unit = {
-    entityDao.saveOrUpdate(makeupCourse, grades)
+    makeupCourse.inputAt = Some(Instant.now)
+    entityDao.saveOrUpdate(makeupCourse, makeupCourse.takers, grades)
     eventbus.publish(DataEvent.update(grades))
+  }
+
+  override def removeGrades(makeupCourse: FinalMakeupCourse): Option[String] = {
+    if (makeupCourse.status >= Grade.Status.Confirmed) {
+      Some("已经提交的成绩不能删除")
+    } else {
+      makeupCourse.status = 0
+      makeupCourse.inputAt = None
+      makeupCourse.takers foreach { t => t.score = None }
+      val builder = OqlBuilder.from(classOf[CourseGrade], "courseGrade")
+      builder.where("courseGrade.crn = :crn", makeupCourse.crn)
+      builder.where("courseGrade.course = :course", makeupCourse.course)
+      builder.where("courseGrade.semester = :semester", makeupCourse.semester)
+      builder.where("courseGrade.clazz is null")
+      val grades = entityDao.search(builder)
+      entityDao.remove(grades)
+      entityDao.saveOrUpdate(makeupCourse, makeupCourse.takers)
+      eventbus.publish(DataEvent.remove(grades))
+      None
+    }
   }
 }

@@ -45,33 +45,33 @@ class FreeWS extends ActionSupport, JsonAPISupport, MimeSupport {
     if (times.isEmpty) {
       List.empty
     } else {
-      val builder = OqlBuilder.from(classOf[Classroom], "classroom")
-        .where("classroom.beginOn <= :now and (classroom.endOn is null or classroom.endOn >= :now)", LocalDate.now)
+      val builder = OqlBuilder.from(classOf[Classroom], "r")
+        .where("r.beginOn <= :now and (room.endOn is null or r.endOn >= :now)", LocalDate.now)
 
       val limit = new PageLimit(QueryHelper.pageIndex, QueryHelper.pageSize)
       builder.limit(limit)
       getInt("room.campus.id") foreach { campusId =>
-        builder.where("classroom.campus.id=:campusId", campusId)
+        builder.where("r.campus.id=:campusId", campusId)
       }
       getInt("room.building.id") foreach { buildingId =>
-        builder.where("classroom.building.id=:buildingId", buildingId)
+        builder.where("r.building.id=:buildingId", buildingId)
       }
       getInt("room.roomType.id") foreach { roomTypeId =>
-        builder.where("classroom.roomType.id=:roomTypeId", roomTypeId)
+        builder.where("r.roomType.id=:roomTypeId", roomTypeId)
       }
       get("room.name") foreach { name =>
         if (Strings.isNotBlank(name)) {
-          builder.where("classroom.name like :name", s"%${name.trim()}%")
+          builder.where("r.name like :name", s"%${name.trim()}%")
         }
       }
       getInt("room.capacity") foreach { capacity =>
-        builder.where("classroom.capacity >:capacity", capacity)
+        builder.where("r.capacity >:capacity", capacity)
       }
       getInt("room.courseCapacity") foreach { courseCapacity =>
-        builder.where("classroom.courseCapacity >:courseCapacity", courseCapacity)
+        builder.where("r.courseCapacity >:courseCapacity", courseCapacity)
       }
       getInt("room.examCapacity") foreach { examCapacity =>
-        builder.where("classroom.examCapacity >:examCapacity", examCapacity)
+        builder.where("r.examCapacity >:examCapacity", examCapacity)
       }
 
       val weekTimes = parseTimes(times)
@@ -92,17 +92,17 @@ class FreeWS extends ActionSupport, JsonAPISupport, MimeSupport {
   }
 
   private def addOccupancyQuery(query: OqlBuilder[Classroom], times: collection.Seq[WeekTime]): Unit = {
-    val hql = new StringBuilder(s" from ${classOf[Occupancy].getName} occupancy where occupancy.room = classroom and ")
+    val hql = new StringBuilder(s" from ${classOf[Occupancy].getName} occupancy where occupancy.room = r and ")
     val conditions = times.indices map { i =>
       val time = times(i)
       query.param("endTime" + i, time.endAt)
       query.param("startTime" + i, time.beginAt)
       query.param("startOn" + i, time.startOn)
-      s"(bitand(occupancy.time.weekstate,${time.weekstate.value})>0 and occupancy.time.startOn = :startOn${i}" +
-        s" and occupancy.time.beginAt < :endTime${i} and occupancy.time.endAt > :startTime${i})"
+      s"bitand(occupancy.time.weekstate,${time.weekstate.value})>0 and occupancy.time.startOn = :startOn${i}" +
+        s" and occupancy.time.beginAt < :endTime${i} and occupancy.time.endAt > :startTime${i}"
     }
     hql.append(s"(${conditions.mkString(" or ")})")
-    query.where("exists (" + hql.toString + ")")
+    query.where("not exists (" + hql.toString + ")")
   }
 
   private def parseTimes(times: Iterable[String]): collection.Seq[WeekTime] = {

@@ -54,4 +54,12 @@ trait FinalMakeupService {
    * @param grades
    */
   def saveGrades(makeupCourse: FinalMakeupCourse, grades: Iterable[CourseGrade]): Unit
+
+  /**
+   * 删除补考成绩
+   *
+   * @param makeupCourse
+   * @return
+   */
+  def removeGrades(makeupCourse: FinalMakeupCourse): Option[String]
 }
