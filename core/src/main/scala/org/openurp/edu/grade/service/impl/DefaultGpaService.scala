@@ -133,7 +133,7 @@ class DefaultGpaService extends GpaService {
       val filterNames = projectConfigService.get(std.project, "edu.grade.gpa_filters", "")
       //添加非免修,和不计算绩点的内置规则
       var filters = gradeFilterRegistry.getFilters(filterNames).toList
-      filters = GradeFilters.defaults ::: filters
+      filters = List(GradeFilters.CalcGP) ::: filters
       filters
     }
   }
