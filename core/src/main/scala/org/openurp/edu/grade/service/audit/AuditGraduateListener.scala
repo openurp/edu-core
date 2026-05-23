@@ -48,10 +48,12 @@ class AuditGraduateListener extends AuditPlanListener {
       val plan = context.coursePlan
       for (groupResult <- context.result.groupResults) {
         for (car <- groupResult.courseResults) {
-          if (!car.passed && (courseNames.contains(car.course.name) || car.course.name.startsWith("毕业论文"))) {
-            car.predicted = true
-            car.addRemark("毕业学年课程")
-            groupResult.addCourseResult(car)
+          if (!car.passed) {
+            if (courseNames.exists(x => car.course.name.contains(x))) {
+              car.predicted = true
+              car.addRemark("毕业学年课程")
+              groupResult.addCourseResult(car)
+            }
           }
         }
       }
