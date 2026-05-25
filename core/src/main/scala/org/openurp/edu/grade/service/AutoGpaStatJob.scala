@@ -123,7 +123,7 @@ class AutoGpaStatJob extends AbstractDaoTask, Scheduled, Logging {
    */
   private def getOutdated(): collection.Seq[StdGpa] = {
     val query = OqlBuilder.from(classOf[StdGpa], "d")
-    query.where("d.project.id in(:projectIds)", projectIds)
+    query.where("d.project.id in (:projectIds)", projectIds)
     query.where("d.updatedAt <= :lastUpdatedAt", Instant.now.minusSeconds(minUpdateDays * 24 * 60 * 60))
     query.where("d.std.beginOn <= :now and d.std.endOn >= :now", LocalDate.now)
     query.orderBy("d.std.code")
@@ -138,7 +138,7 @@ class AutoGpaStatJob extends AbstractDaoTask, Scheduled, Logging {
   private def getExpired(): collection.Seq[StdGpa] = {
     val query = OqlBuilder.from(classOf[StdGpa], "d")
     query.where("d.project.id in(:projectIds)", projectIds)
-    query.where("exists(from " + classOf[CourseGrade].getName + " cg where cg.std=s and cg.updatedAt > d.updatedAt)")
+    query.where("exists(from " + classOf[CourseGrade].getName + " cg where cg.std=d.std and cg.updatedAt > d.updatedAt)")
     query.where("d.std.beginOn <= :now and d.std.endOn >= :now", LocalDate.now)
     query.orderBy("d.std.code")
     query.limit(1, bulkSize)
