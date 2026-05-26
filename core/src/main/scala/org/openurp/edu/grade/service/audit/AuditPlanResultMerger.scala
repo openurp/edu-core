@@ -39,7 +39,6 @@ object AuditPlanResultMerger extends Logging {
     existedResult.requiredCredits = newResult.requiredCredits
     existedResult.owedCredits = newResult.owedCredits
     existedResult.owedCredits2 = newResult.owedCredits2
-    existedResult.owedCredits3 = newResult.owedCredits3
     existedResult.passedCredits = newResult.passedCredits
     existedResult.passed = newResult.passed
     existedResult.predicted = newResult.predicted
@@ -104,7 +103,6 @@ object AuditPlanResultMerger extends Logging {
     target.passedCredits = source.passedCredits
     target.owedCredits = source.owedCredits
     target.owedCredits2 = source.owedCredits2
-    target.owedCredits3 = source.owedCredits3
     // 收集课程组[groupName->groupResult]
     val tarGroupResults = Collections.newMap[String, AuditGroupResult]
     val sourceGroupResults = Collections.newMap[String, AuditGroupResult]

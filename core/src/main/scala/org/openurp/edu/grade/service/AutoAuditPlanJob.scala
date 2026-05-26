@@ -70,7 +70,6 @@ class AutoAuditPlanJob extends AbstractDaoTask, Logging, Scheduled {
     val query = OqlBuilder.from[Long](classOf[Student].getName, "s")
     //在校，有效期内的学籍
     query.where("s.state.beginOn <= :now and s.state.endOn >=:now", LocalDate.now)
-    query.where("s.state.inschool=true")
     query.where("s.project=:project", p)
     query.orderBy("s.code")
     query.select("s.id")

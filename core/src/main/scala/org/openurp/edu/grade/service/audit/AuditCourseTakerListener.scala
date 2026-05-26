@@ -18,12 +18,15 @@
 package org.openurp.edu.grade.service.audit
 
 import org.beangle.commons.collection.Collections
+import org.beangle.commons.lang.time.Weeks
 import org.beangle.data.dao.{EntityDao, OqlBuilder}
 import org.openurp.base.edu.model.Course
 import org.openurp.edu.clazz.model.CourseTaker
 import org.openurp.edu.grade.domain.{AuditPlanContext, AuditPlanListener}
 import org.openurp.edu.grade.model.{AuditCourseResult, AuditGroupResult, CourseGrade, Grade}
 import org.openurp.edu.program.domain.AlternativeCourseProvider
+
+import java.time.LocalDate
 
 class AuditCourseTakerListener extends AuditPlanListener {
 
@@ -34,19 +37,22 @@ class AuditCourseTakerListener extends AuditPlanListener {
   override def end(context: AuditPlanContext): Unit = {
     if (context.result.passed) return
 
+    //毕业学年
+    val std = context.std
+    val now = LocalDate.now
+    val isGraduate = std.graduateOn.isBefore(LocalDate.now) || Weeks.between(now, std.graduateOn) <= 52
+
     val builder = OqlBuilder.from(classOf[CourseTaker], "ct").where("ct.std=:std", context.std)
     builder.where(s"not exists(from ${classOf[CourseGrade].getName} cg where cg.semester=ct.clazz.semester" +
       " and cg.course=ct.clazz.course and cg.std=ct.std and cg.status=:status)", Grade.Status.Published)
     val courseTakers = entityDao.search(builder).toBuffer
-    val last = getTargetGroupResult(context)
+
     val result = context.result
     val used = Collections.newBuffer[CourseTaker]
     courseTakers foreach { ct =>
       result.getCourseResult(ct.course) foreach { cr =>
         used.addOne(ct)
-        cr.taking = true
-        cr.addRemark(s"在读 ${ct.semester.code}(${ct.clazz.crn})")
-        cr.groupResult.addCourseResult(cr)
+        updateStatus(ct, cr, cr.groupResult, isGraduate)
       }
     }
     courseTakers.subtractAll(used)
@@ -56,7 +62,7 @@ class AuditCourseTakerListener extends AuditPlanListener {
       val courseMap = Collections.newMap[Course, AuditCourseResult]
       for (groupResult <- context.result.groupResults) {
         for (car <- groupResult.courseResults) {
-          if !car.passed && !car.taking && !car.predicted then courseMap.put(car.course, car)
+          if !car.passed && !car.predicted then courseMap.put(car.course, car)
         }
       }
       //如果有课程不及格，开始检查多学期开课的课程
@@ -66,6 +72,7 @@ class AuditCourseTakerListener extends AuditPlanListener {
         courseMap.foreach { case (c, cr) =>
           if (c.subCourse.nonEmpty && c.terms > 0 && reminded.contains(c.subCourse.get)) {
             cr.taking = true
+            cr.predicted = isGraduate
             cr.addRemark("在读")
             //有可能是多条。这次我们用filter而不是用find
             courseTakers.filter(x => x.course == c.subCourse.get) foreach { ct =>
@@ -100,23 +107,22 @@ class AuditCourseTakerListener extends AuditPlanListener {
       }
     }
     //如果找不到直接的审核结果,也不能替代的
+    val last = getTargetGroupResult(context)
     courseTakers foreach { ct =>
       var courseType = ct.courseType
       if (null == courseType) courseType = ct.clazz.courseType
       val target = context.getGroup(ct.course, courseType).flatMap(x => result.getGroupResult(x.name)).orElse(last)
       target foreach { t =>
         used.addOne(ct)
-        add2Group(ct, t, last.contains(t))
+        add2Group(ct, t, last.contains(t), isGraduate)
       }
     }
 
   }
 
-  private def add2Group(taker: CourseTaker, groupResult: AuditGroupResult, isLast: Boolean): Unit = {
+  private def add2Group(taker: CourseTaker, groupResult: AuditGroupResult, isLast: Boolean, isGraduate: Boolean): Unit = {
     val cr = groupResult.getCourseResult(taker.course).getOrElse(new AuditCourseResult(taker.course))
-    cr.taking = true
-    groupResult.addCourseResult(cr)
-    cr.addRemark(s"在读 ${taker.semester.code}(${taker.clazz.crn})")
+    updateStatus(taker, cr, groupResult, isGraduate)
     var courseType = taker.courseType
     if (null == courseType) courseType = taker.clazz.courseType
     if (isLast && courseType != groupResult.courseType) {
@@ -141,6 +147,13 @@ class AuditCourseTakerListener extends AuditPlanListener {
       }
       groupResult
     }
+  }
+
+  private def updateStatus(ct: CourseTaker, cr: AuditCourseResult, groupResult: AuditGroupResult, isGraduate: Boolean): Unit = {
+    cr.taking = true
+    cr.predicted = isGraduate
+    cr.addRemark(s"在读 ${ct.semester.code}(${ct.clazz.crn})")
+    groupResult.addCourseResult(cr)
   }
 
 }

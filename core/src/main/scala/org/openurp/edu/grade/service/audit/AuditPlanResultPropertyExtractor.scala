@@ -26,15 +26,9 @@ class AuditPlanResultPropertyExtractor extends DefaultPropertyExtractor {
     val result = target.asInstanceOf[AuditPlanResult]
     property match
       case "result" =>
-        result.topGroupResults.filter(!_.passed).map { g =>
-          val child = g.children.filter(!_.passed).map(x => x.name + " " + x.owedCredits + "分").mkString(" ")
-          g.name + " " + g.owedCredits + "分" + (if child.isEmpty then "" else "(" + child + ")")
-        }.mkString("\r\n")
-      case "result3" =>
-        result.topGroupResults.filter(_.owedCredits3 > 0).map { g =>
-          val child = g.children.filter(_.owedCredits3 > 0).map(x => x.name + " " + x.owedCredits3 + "分").mkString(" ")
-          g.name + " " + g.owedCredits3 + "分" + (if child.isEmpty then "" else "(" + child + ")")
-        }.mkString("\r\n")
+        result.failedGroups(1).map(g => s"${g.name} ${g.owedCredits}分").mkString("\r\n")
+      case "result2" =>
+        result.failedGroups(2).map(g => s"${g.name} ${g.owedCredits2}分").mkString("\r\n")
       case _ => super.get(target, property)
   }
 }
