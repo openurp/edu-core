@@ -15,14 +15,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.openurp.edu.clazz.service
+package org.openurp.edu.exam.service
 
 import org.beangle.commons.cdi.BindModule
-import org.openurp.edu.clazz.domain.{DefaultClazzProvider, DefaultCourseTakerProvider}
+import org.openurp.edu.exam.domain.DefaultExamTakerProvider
 
 class DefaultModule extends BindModule {
   override protected def binding(): Unit = {
-    bind(classOf[DefaultClazzProvider])
-    bind(classOf[DefaultCourseTakerProvider])
+    bind(classOf[DefaultExamTakerProvider])
   }
 }

@@ -43,7 +43,7 @@ class NoticeWS extends ActionSupport {
       case None => List(new Properties())
       case Some(std) =>
         val semester = semesterService.get(std.project, LocalDate.now)
-        val clazzes = clazzProvider.getClazzes(semester, std).map(_.clazz)
+        val clazzes = clazzProvider.getClazzes(semester, std)
         val notices = getQueryBuilder(clazzes)
         notices.map { notice =>
           val prop = new Properties(notice, "id", "title", "contents", "updatedAt")
